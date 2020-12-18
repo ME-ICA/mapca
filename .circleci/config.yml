@@ -1,0 +1,203 @@
+# Python CircleCI 2.1 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-python/ for more details
+#
+version: 2.1
+orbs:
+  codecov: codecov/codecov@1.0.5
+jobs:
+
+  makeenv_37:
+    docker:
+      - image: continuumio/miniconda3
+    working_directory: /tmp/src/mapca
+    steps:
+      - checkout
+      - restore_cache:
+          key: conda-py37-v1-{{ checksum "mapca/info.py" }}
+      - run:
+          name: Generate environment
+          command: |
+            if [ ! -d /opt/conda/envs/mapca_py37 ]; then
+              conda create -yq -n mapca_py37 python=3.7
+              source activate mapca_py37
+              pip install .[tests]
+            fi
+      - save_cache:
+          key: conda-py37-v1-{{ checksum "mapca/info.py" }}
+          paths:
+              - /opt/conda/envs/mapca_py37
+
+  unittest_35:
+    docker:
+      - image: continuumio/miniconda3
+    working_directory: /tmp/src/mapca
+    steps:
+      - checkout
+      - restore_cache:
+          key: conda-py35-v1-{{ checksum "mapca/info.py" }}
+      - run:
+          name: Generate environment
+          command: |
+            apt-get install -yqq make
+            if [ ! -d /opt/conda/envs/mapca_py35 ]; then
+              conda create -yq -n mapca_py35 python=3.5
+              source activate mapca_py35
+              pip install .[tests]
+            fi
+      - run:
+          name: Running unit tests
+          command: |
+            source activate mapca_py35
+            make unittest
+            mkdir /tmp/src/coverage
+            mv /tmp/src/mapca/.coverage /tmp/src/coverage/.coverage.py35
+      - save_cache:
+          key: conda-py35-v1-{{ checksum "mapca/info.py" }}
+          paths:
+              - /opt/conda/envs/mapca_py35
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+              - src/coverage/.coverage.py35
+
+  unittest_36:
+    docker:
+      - image: continuumio/miniconda3
+    working_directory: /tmp/src/mapca
+    steps:
+      - checkout
+      - restore_cache:
+          key: conda-py36-v1-{{ checksum "mapca/info.py" }}
+      - run:
+          name: Generate environment
+          command: |
+            apt-get install -yqq make
+            if [ ! -d /opt/conda/envs/mapca_py36 ]; then
+              conda create -yq -n mapca_py36 python=3.6
+              source activate mapca_py36
+              pip install .[tests]
+            fi
+      - run:
+          name: Running unit tests
+          command: |
+            source activate mapca_py36
+            make unittest
+            mkdir /tmp/src/coverage
+            mv /tmp/src/mapca/.coverage /tmp/src/coverage/.coverage.py36
+      - save_cache:
+          key: conda-py36-v1-{{ checksum "mapca/info.py" }}
+          paths:
+              - /opt/conda/envs/mapca_py36
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+              - src/coverage/.coverage.py36
+
+  unittest_37:
+    docker:
+      - image: continuumio/miniconda3
+    working_directory: /tmp/src/mapca
+    steps:
+      - checkout
+      - restore_cache:
+          key: conda-py37-v1-{{ checksum "mapca/info.py" }}
+      - run:
+          name: Running unit tests
+          command: |
+            apt-get install -y make
+            source activate mapca_py37  # depends on makeenv_37
+            make unittest
+            mkdir /tmp/src/coverage
+            mv /tmp/src/mapca/.coverage /tmp/src/coverage/.coverage.py37
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+              - src/coverage/.coverage.py37
+
+  style_check:
+    docker:
+      - image: continuumio/miniconda3
+    working_directory: /tmp/src/mapca
+    steps:
+      - checkout
+      - restore_cache:
+          key: conda-py37-v1-{{ checksum "mapca/info.py" }}
+      - run:
+          name: Style check
+          command: |
+            apt-get install -yqq make
+            source activate mapca_py37  # depends on makeenv37
+            make lint
+
+  merge_coverage:
+    working_directory: /tmp/src/mapca
+    docker:
+      - image: continuumio/miniconda3
+    steps:
+      - attach_workspace:
+          at: /tmp
+      - checkout
+      - restore_cache:
+          key: conda-py37-v1-{{ checksum "mapca/info.py" }}
+      - run:
+          name: Merge coverage files
+          command: |
+            apt-get install -yqq curl
+            source activate mapca_py37  # depends on makeenv37
+            cd /tmp/src/coverage/
+            coverage combine
+            coverage xml
+      - store_artifacts:
+          path: /tmp/src/coverage
+      - codecov/upload:
+          file: /tmp/src/coverage/coverage.xml
+
+  deploy:
+    docker:
+      - image: continuumio/miniconda3
+    steps:
+      - checkout
+      - run:
+          name: init .pypirc
+          command: |
+            echo -e "[pypi]" >> ~/.pypirc
+            echo -e "username = $PYPI_USER" >> ~/.pypirc
+            echo -e "password = $PYPI_PASSWORD" >> ~/.pypirc
+      - run:
+          name: create package
+          command: |
+            python setup.py sdist
+            python setup.py bdist_wheel
+      - run:
+          name: upload to pypi
+          command: |
+            pip install twine
+            twine upload dist/*
+
+workflows:
+  version: 2.1
+  build_test:
+    jobs:
+      - makeenv_37
+      - unittest_35
+      - unittest_36
+      - unittest_37:
+          requires:
+            - makeenv_37
+      - style_check:
+          requires:
+            - makeenv_37
+      - merge_coverage:
+          requires:
+            - unittest_35
+            - unittest_36
+            - unittest_37
+      - deploy:
+          requires:
+            - merge_coverage
+          filters:
+            tags:
+              only: /[0-9]+\.[0-9]+\.[0-9]+(?:rc)?(?:[0-9]+)?
+            branches:
+              ignore: /.*/
