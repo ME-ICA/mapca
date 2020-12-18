@@ -1,0 +1,18 @@
+{
+    "creators": [
+        {
+            "name": "The ME-ICA Community"
+        },
+        {
+            "name": "Uruñuela, Eneko",
+            "affiliation": "Basque Center on Cognition, Brain and Language",
+            "orcid": "0000-0001-6849-9088"
+        }
+    ],
+    "keywords": [
+        "neuroimaging",
+        "fMRI"
+    ],
+    "license": "",
+    "upload_type": "software"
+}
