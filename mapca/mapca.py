@@ -13,7 +13,65 @@ LGR = logging.getLogger(__name__)
 
 
 class MovingAveragePCA:
-    """Scikit-learn-style moving-average PCA estimator."""
+    """Scikit-learn-style moving-average PCA estimator.
+
+    The moving-average method estimates the underlying dimensionality
+    of the data, after which a standard sklearn PCA is used to perform
+    the decomposition.
+
+    Parameters
+    ----------
+    criteria : {'mdl', 'aic', 'kic'}, optional
+        Criteria to select the number of components. Default is "mdl".
+        ``mdl`` refers to Minimum Description Length, which is the most aggressive
+        (and recommended) option.
+        ``aic`` refers to the Akaike Information Criterion, which is the least aggressive option.
+        ``kic`` refers to the Kullback-Leibler Information Criterion, which is the middle option.
+    normalize : bool, optional
+        Whether to normalize (zero mean and unit standard deviation) or not. Default is False.
+
+    Attributes
+    ----------
+    components_ : array, shape (n_components, n_features)
+        Principal axes in feature space, representing the directions of maximum
+        variance in the data. The components are sorted by explained_variance_.
+    explained_variance_ : array, shape (n_components,)
+        The amount of variance explained by each of the selected components.
+
+        Equal to n_components largest eigenvalues of the covariance matrix of X.
+    explained_variance_ratio_ : array, shape (n_components,)
+        Percentage of variance explained by each of the selected components.
+
+        If n_components is not set then all components are stored and the sum of the
+        ratios is equal to 1.0.
+    singular_values_ : array, shape (n_components,)
+        The singular values corresponding to each of the selected components.
+        The singular values are equal to the 2-norms of the n_components
+        variables in the lower-dimensional space.
+    mean_ : array, shape (n_features,)
+        Per-feature empirical mean, estimated from the training set.
+
+        Equal to X.mean(axis=0).
+    n_components_ : int
+        The estimated number of components.
+        When n_components is set to ‘mle’ or a number between 0 and 1
+        (with svd_solver == ‘full’) this number is estimated from input data.
+        Otherwise it equals the parameter n_components, or the lesser value of
+        n_features and n_samples if n_components is None.
+    n_features_ : int
+        Number of features in the training data.
+    n_samples_ : int
+        Number of samples in the training data.
+    noise_variance_ : float
+        The estimated noise covariance following the Probabilistic PCA model
+        from Tipping and Bishop 1999.
+        See “Pattern Recognition and Machine Learning” by C. Bishop, 12.2.1 p. 574
+        or http://www.miketipping.com/papers/met-mppca.pdf.
+        It is required to compute the estimated data covariance and score samples.
+
+        Equal to the average of (min(n_features, n_samples) - n_components) smallest
+        eigenvalues of the covariance matrix of X.
+    """
 
     def __init__(self, criteria="mdl", normalize=True):
         self.criteria = criteria
@@ -195,6 +253,11 @@ class MovingAveragePCA:
         -------
         X_new : array-like, shape (n_samples, n_components)
             Transformed values.
+
+        Notes
+        -----
+        The transformation step is different from scikit-learn's approach,
+        which ignores explained variance.
         """
         self._fit(X, shape_3d, mask_vec)
         return self.transform(X)
@@ -213,6 +276,10 @@ class MovingAveragePCA:
         Returns
         -------
         X_new : array-like, shape (n_samples, n_components)
+
+        Notes
+        -----
+        This is different from scikit-learn's approach, which ignores explained variance.
         """
         X_new = np.dot(np.dot(X, self.components_.T), np.diag(1.0 / self.explained_variance_))
         return X_new
@@ -231,13 +298,18 @@ class MovingAveragePCA:
         Returns
         -------
         X_original : array-like, shape (n_samples, n_features)
+
+        Notes
+        -----
+        This is different from scikit-learn's approach, which ignores explained variance.
         """
         X_orig = np.dot(np.dot(X, np.diag(self.explained_variance_)), self.components_)
         return X_orig
 
 
 def ma_pca(img, mask_img, criteria="mdl", normalize=False):
-    """
+    """Perform moving average-based PCA on imaging data.
+
     Run Singular Value Decomposition (SVD) on input data,
     automatically select components based on a Moving Average
     (stationary Gaussian) process. Finally perform PCA with
@@ -246,30 +318,28 @@ def ma_pca(img, mask_img, criteria="mdl", normalize=False):
     Parameters
     ----------
     img : 4D niimg_like
-        Unmasked data to compute the PCA on.
-    mask_img : 3D niim_like
+        Data on which to apply PCA.
+    mask_img : 3D niimg_like
         Mask to apply on ``img``.
-    criteria : {'aic', 'kic', mdl'}, optional
-        Criteria to select the number of components; default='mdl'.
+    criteria : {'mdl', 'aic', 'kic'}, optional
+        Criteria to select the number of components. Default is "mdl".
+        ``mdl`` refers to Minimum Description Length, which is the most aggressive
+        (and recommended) option.
+        ``aic`` refers to the Akaike Information Criterion, which is the least aggressive option.
+        ``kic`` refers to the Kullback-Leibler Information Criterion, which is the middle option.
+    normalize : bool, optional
+        Whether to normalize (zero mean and unit standard deviation) or not. Default is False.
 
     Returns
     -------
-    u : (S [*E] x C) array-like
+    u : array-like, shape (n_samples, n_components)
         Component weight map for each component.
-    s : (C,) array-like
+    s : array-like, shape (n_components,)
         Variance explained for each component.
-    varex_norm : (n_components,) array-like
+    varex_norm : array-like, shape (n_components,)
         Explained variance ratio.
-    v : (T x C) array-like
+    v : array-like, shape (n_timepoints, n_components)
         Component timeseries.
-
-    Notes
-    -----
-    aic : Akaike Information Criterion. Least aggressive option.
-    kic : Kullback-Leibler Information Criterion. Stands in the
-          middle in terms of aggressiveness.
-    mdl : Minimum Description Length. Most aggressive
-          (and recommended) option.
     """
     from nilearn import masking
 
