@@ -80,10 +80,11 @@ class MovingAveragePCA:
     def _fit(self, X, shape_3d, mask_vec):
         n_x, n_y, n_z = shape_3d
         n_samples, n_timepoints = X.shape
+
         if self.normalize:
-            scaler = StandardScaler(with_mean=True, with_std=True)
+            self.scaler_ = StandardScaler(with_mean=True, with_std=True)
             # TODO: determine if tedana is already normalizing before this
-            X = scaler.fit_transform(X)  # This was X_sc
+            X = self.scaler_.fit_transform(X)  # This was X_sc
 
         LGR.info("Performing SVD on original data...")
         V, eigenvalues = utils._icatb_svd(X, n_timepoints)
@@ -153,6 +154,7 @@ class MovingAveragePCA:
                 dat[:, i_vol] = dat0[mask_s_1d == 1]
 
             # Perform Variance Normalization
+            scaler = StandardScaler(with_mean=True, with_std=True)
             dat = scaler.fit_transform(dat)
 
             # (completed)
@@ -176,6 +178,7 @@ class MovingAveragePCA:
             eigenvalues[np.real(eigenvalues) <= np.finfo(float).eps] = np.min(
                 eigenvalues[np.real(eigenvalues) >= np.finfo(float).eps]
             )
+
         LGR.info("Estimating the dimensionality ...")
         p = n_timepoints
         aic = np.zeros(p - 1)
@@ -304,6 +307,8 @@ class MovingAveragePCA:
         This is different from scikit-learn's approach, which ignores explained variance.
         """
         X_orig = np.dot(np.dot(X, np.diag(self.explained_variance_)), self.components_)
+        if self.normalize:
+            X_orig = self.scaler_.inverse_transform(X_orig)
         return X_orig
 
 
