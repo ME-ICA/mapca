@@ -21,8 +21,8 @@ class MovingAveragePCA:
 
     Parameters
     ----------
-    criteria : {'mdl', 'aic', 'kic'}, optional
-        Criteria to select the number of components. Default is "mdl".
+    criterion : {'mdl', 'aic', 'kic'}, optional
+        Criterion used to select the number of components. Default is "mdl".
         ``mdl`` refers to Minimum Description Length, which is the most aggressive
         (and recommended) option.
         ``aic`` refers to the Akaike Information Criterion, which is the least aggressive option.
@@ -73,8 +73,8 @@ class MovingAveragePCA:
         eigenvalues of the covariance matrix of X.
     """
 
-    def __init__(self, criteria="mdl", normalize=True):
-        self.criteria = criteria
+    def __init__(self, criterion="mdl", normalize=True):
+        self.criterion = criterion
         self.normalize = normalize
 
     def _fit(self, X, shape_3d, mask_vec):
@@ -195,11 +195,11 @@ class MovingAveragePCA:
 
         itc = np.row_stack([aic, kic, mdl])
 
-        if self.criteria == "aic":
+        if self.criterion == "aic":
             criteria_idx = 0
-        elif self.criteria == "kic":
+        elif self.criterion == "kic":
             criteria_idx = 1
-        elif self.criteria == "mdl":
+        elif self.criterion == "mdl":
             criteria_idx = 2
 
         dlap = np.diff(itc[criteria_idx, :])
@@ -312,7 +312,7 @@ class MovingAveragePCA:
         return X_orig
 
 
-def ma_pca(img, mask_img, criteria="mdl", normalize=False):
+def ma_pca(img, mask_img, criterion="mdl", normalize=False):
     """Perform moving average-based PCA on imaging data.
 
     Run Singular Value Decomposition (SVD) on input data,
@@ -326,8 +326,8 @@ def ma_pca(img, mask_img, criteria="mdl", normalize=False):
         Data on which to apply PCA.
     mask_img : 3D niimg_like
         Mask to apply on ``img``.
-    criteria : {'mdl', 'aic', 'kic'}, optional
-        Criteria to select the number of components. Default is "mdl".
+    criterion : {'mdl', 'aic', 'kic'}, optional
+        Criterion used to select the number of components. Default is "mdl".
         ``mdl`` refers to Minimum Description Length, which is the most aggressive
         (and recommended) option.
         ``aic`` refers to the Akaike Information Criterion, which is the least aggressive option.
@@ -350,7 +350,7 @@ def ma_pca(img, mask_img, criteria="mdl", normalize=False):
 
     data = masking.apply_mask(img, mask_img).T  # not sure about transpose
     mask_vec = np.reshape(mask_img.get_fdata(), np.prod(mask_img.shape), order="F")
-    pca = MovingAveragePCA(criteria=criteria, normalize=normalize)
+    pca = MovingAveragePCA(criterion=criterion, normalize=normalize)
     u = pca.fit_transform(data, shape_3d=img.shape, mask_vec=mask_vec)
     s = pca.explained_variance_
     varex_norm = pca.explained_variance_ratio_
