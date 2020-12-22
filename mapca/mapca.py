@@ -352,7 +352,7 @@ def ma_pca(img, mask_img, criteria="mdl", normalize=False):
     mask_vec = np.reshape(mask_img.get_fdata(), np.prod(mask_img.shape), order="F")
     pca = MovingAveragePCA(criteria=criteria, normalize=normalize)
     u = pca.fit_transform(data, shape_3d=img.shape, mask_vec=mask_vec)
-    v = pca.components_.T
-    varex_norm = pca.explained_variance_ratio_
     s = pca.explained_variance_
+    varex_norm = pca.explained_variance_ratio_
+    v = pca.components_.T
     return u, s, varex_norm, v
