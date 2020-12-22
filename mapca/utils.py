@@ -110,9 +110,7 @@ def _parzen_win(n_points):
 
     # Equation 37 of [1]: window defined in three sections
     parzen_w1 = 2 * (1 - abs(k1) / (n_points / 2)) ** 3
-    parzen_w2 = (
-        1 - 6 * (abs(k2) / (n_points / 2)) ** 2 + 6 * (abs(k2) / (n_points / 2)) ** 3
-    )
+    parzen_w2 = 1 - 6 * (abs(k2) / (n_points / 2)) ** 2 + 6 * (abs(k2) / (n_points / 2)) ** 3
     parzen_w = np.hstack((parzen_w1, parzen_w2, parzen_w1[::-1])).T
 
     return parzen_w
@@ -189,12 +187,8 @@ def ent_rate_sp(data, sm_window):
         data_corr[:, :, (dims[2] - 1) + m3] = temp
 
     # Create bias-correcting vectors
-    v1 = np.hstack((np.arange(1, dims[0] + 1), np.arange(dims[0] - 1, 0, -1)))[
-        np.newaxis, :
-    ]
-    v2 = np.hstack((np.arange(1, dims[1] + 1), np.arange(dims[1] - 1, 0, -1)))[
-        np.newaxis, :
-    ]
+    v1 = np.hstack((np.arange(1, dims[0] + 1), np.arange(dims[0] - 1, 0, -1)))[np.newaxis, :]
+    v2 = np.hstack((np.arange(1, dims[1] + 1), np.arange(dims[1] - 1, 0, -1)))[np.newaxis, :]
     v3 = np.arange(dims[2], 0, -1)
 
     vd = np.dot(v1.T, v2)
@@ -269,9 +263,7 @@ def _est_indp_sp(data):
             break
 
     if n_iters_0 is None:
-        raise ValueError(
-            "Ill conditioned data, can not estimate " "independent samples."
-        )
+        raise ValueError("Ill conditioned data, can not estimate " "independent samples.")
     n_iters = n_iters_0
     LGR.debug(
         "Estimated the entropy rate of the Gaussian component "
@@ -308,8 +300,7 @@ def _subsampling(data, sub_depth):
         ][:, :, np.arange(idx_0[2], ndims[2], sub_depth)]
     else:
         raise ValueError(
-            "Unrecognized matrix dimension! )"
-            "Input array must be 3D with min dimension > 1."
+            "Unrecognized matrix dimension! )" "Input array must be 3D with min dimension > 1."
         )
 
     return out
