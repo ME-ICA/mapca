@@ -5,28 +5,18 @@
 
 def main():
     """ Install entry-point """
-    import versioneer
+    from inspect import currentframe, getfile
     from io import open
     from os import path as op
-    from inspect import getfile, currentframe
-    from setuptools import setup, find_packages
-    from mapca.info import (
-        __packagename__,
-        __version__,
-        __author__,
-        __email__,
-        __maintainer__,
-        __license__,
-        __description__,
-        __longdesc__,
-        __url__,
-        DOWNLOAD_URL,
-        CLASSIFIERS,
-        REQUIRES,
-        TESTS_REQUIRES,
-        EXTRA_REQUIRES,
-        PYTHON_REQUIRES,
-    )
+
+    from setuptools import find_packages, setup
+
+    import versioneer
+    from mapca.info import (CLASSIFIERS, DOWNLOAD_URL, EXTRA_REQUIRES,
+                            PYTHON_REQUIRES, REQUIRES, TESTS_REQUIRES,
+                            __author__, __description__, __email__,
+                            __license__, __longdesc__, __maintainer__,
+                            __packagename__, __url__, __version__)
 
     pkg_data = {
         "mapca": [

@@ -4,10 +4,9 @@ PCA based on Moving Average (stationary Gaussian) process
 import logging
 
 import numpy as np
-
+from scipy.fftpack import fftn, fftshift
 from scipy.linalg import svd
 from scipy.signal import detrend, fftconvolve
-from scipy.fftpack import fftshift, fftn
 
 LGR = logging.getLogger(__name__)
 
