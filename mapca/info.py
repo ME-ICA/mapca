@@ -4,29 +4,41 @@
 """
 Base module variables
 """
-from pathlib import Path
+import importlib.util
+import json
+import os.path as op
 
-readme_path = Path(__file__).parent.parent.joinpath("README.md")
+# Get version
+spec = importlib.util.spec_from_file_location(
+    "_version", op.join(op.dirname(__file__), "nimare/_version.py")
+)
+_version = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(_version)
 
-from ._version import get_versions
+VERSION = _version.get_versions()["version"]
+del _version
 
-__version__ = get_versions()["version"]
-del get_versions
+# Get list of authors from Zenodo file
+with open(op.join(op.dirname(__file__), ".zenodo.json"), "r") as fo:
+    zenodo_info = json.load(fo)
+authors = [author["name"] for author in zenodo_info["creators"]]
+authors = [author.split(", ")[1] + " " + author.split(", ")[0] for author in authors]
 
-__author__ = "mapca developers"
-__copyright__ = "Copyright 2020, mapca developers"
-__credits__ = ["Eneko Urunuela"]
-__license__ = ""
-__maintainer__ = "Eneko Urunuela"
-__email__ = "e.urunuela@bcbl.eu"
-__status__ = "Prototype"
-__url__ = "https://github.com/me-ica/mapca"
-__packagename__ = "mapca"
-__description__ = (
+# Fields
+AUTHOR = "mapca developers"
+COPYRIGHT = "Copyright 2020, mapca developers"
+CREDITS = authors
+LICENSE = ""
+MAINTAINER = "Eneko Urunuela"
+EMAIL = "e.urunuela@bcbl.eu"
+STATUS = "Prototype"
+URL = "https://github.com/me-ica/mapca"
+PACKAGENAME = "mapca"
+DESCRIPTION = (
     "A Python implementation of the moving average principal components analysis "
     "methods from GIFT."
 )
-__longdesc__ = readme_path.open().read()
+LONGDESC = readme_path.open().read()
 
 DOWNLOAD_URL = "https://github.com/ME-ICA/{name}/archive/{ver}.tar.gz".format(
     name=__packagename__, ver=__version__
