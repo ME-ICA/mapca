@@ -34,6 +34,7 @@ DOWNLOAD_URL = "https://github.com/ME-ICA/{name}/archive/{ver}.tar.gz".format(
 
 REQUIRES = [
     "nibabel>=2.5.1",
+    "nilearn",
     "numpy>=1.15",
     "scikit-learn>=0.22",
     "scipy>=1.3.3",
