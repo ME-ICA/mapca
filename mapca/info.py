@@ -8,6 +8,8 @@ import importlib.util
 import json
 import os.path as op
 
+from pathlib import Path
+
 # Get version
 spec = importlib.util.spec_from_file_location(
     "_version", op.join(op.dirname(__file__), "nimare/_version.py")
@@ -24,6 +26,10 @@ with open(op.join(op.dirname(__file__), ".zenodo.json"), "r") as fo:
 authors = [author["name"] for author in zenodo_info["creators"]]
 authors = [author.split(", ")[1] + " " + author.split(", ")[0] for author in authors]
 
+# Get package description from README
+readme_path = Path(__file__).parent.parent.joinpath("README.md")
+longdesc = readme_path.open().read()
+
 # Fields
 AUTHOR = "mapca developers"
 COPYRIGHT = "Copyright 2020, mapca developers"
@@ -38,7 +44,7 @@ DESCRIPTION = (
     "A Python implementation of the moving average principal components analysis "
     "methods from GIFT."
 )
-LONGDESC = readme_path.open().read()
+LONGDESC = longdesc
 
 DOWNLOAD_URL = "https://github.com/ME-ICA/{name}/archive/{ver}.tar.gz".format(
     name=__packagename__, ver=__version__
