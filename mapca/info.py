@@ -12,7 +12,7 @@ from pathlib import Path
 
 # Get version
 spec = importlib.util.spec_from_file_location(
-    "_version", op.join(op.dirname(__file__), "nimare/_version.py")
+    "_version", op.join(op.dirname(__file__), "mapca/_version.py")
 )
 _version = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(_version)
