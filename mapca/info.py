@@ -24,7 +24,12 @@ del _version
 with open(op.join(op.dirname(__file__), ".zenodo.json"), "r") as fo:
     zenodo_info = json.load(fo)
 authors = [author["name"] for author in zenodo_info["creators"]]
-authors = [author.split(", ")[1] + " " + author.split(", ")[0] for author in authors]
+author_names = []
+for author in authors:
+    if ", " in author:
+        author_names.append(author.split(", ")[1] + " " + author.split(", ")[0])
+    else:
+        author_names.append(author)
 
 # Get package description from README
 readme_path = Path(__file__).parent.parent.joinpath("README.md")
@@ -33,7 +38,7 @@ longdesc = readme_path.open().read()
 # Fields
 AUTHOR = "mapca developers"
 COPYRIGHT = "Copyright 2020, mapca developers"
-CREDITS = authors
+CREDITS = author_names
 LICENSE = ""
 MAINTAINER = "Eneko Urunuela"
 EMAIL = "e.urunuela@bcbl.eu"
@@ -47,7 +52,7 @@ DESCRIPTION = (
 LONGDESC = longdesc
 
 DOWNLOAD_URL = "https://github.com/ME-ICA/{name}/archive/{ver}.tar.gz".format(
-    name=__packagename__, ver=__version__
+    name=PACKAGENAME, ver=VERSION
 )
 
 REQUIRES = [
@@ -77,6 +82,8 @@ EXTRA_REQUIRES = {
     "tests": TESTS_REQUIRES,
     "duecredit": ["duecredit"],
 }
+
+ENTRY_POINTS = {}
 
 # Enable a handle to install all extra dependencies at once
 EXTRA_REQUIRES["all"] = list(set([v for deps in EXTRA_REQUIRES.values() for v in deps]))

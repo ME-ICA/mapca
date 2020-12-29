@@ -10,7 +10,7 @@ def main():
     from inspect import getfile, currentframe
     from io import open
     from setuptools import setup, find_packages
-    
+
     ver_file = op.join("mapca", "info.py")
     with open(ver_file) as f:
         exec(f.read())
@@ -39,6 +39,7 @@ def main():
         classifiers=vars["CLASSIFIERS"],
         download_url=vars["DOWNLOAD_URL"],
         # Dependencies handling
+        python_requires=vars["PYTHON_REQUIRES"],
         install_requires=vars["REQUIRES"],
         tests_require=vars["TESTS_REQUIRES"],
         extras_require=vars["EXTRA_REQUIRES"],
