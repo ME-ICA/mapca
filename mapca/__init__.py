@@ -4,23 +4,10 @@ GIFT.
 """
 
 from .due import due, Doi
-
-from .info import (
-    __version__,
-    __author__,
-    __copyright__,
-    __credits__,
-    __license__,
-    __maintainer__,
-    __email__,
-    __status__,
-    __url__,
-    __packagename__,
-    __description__,
-    __longdesc__,
-)
-
+from ._version import get_versions
 from .mapca import ma_pca
+
+__version__ = get_versions()["version"]
 
 import warnings
 
@@ -29,4 +16,7 @@ warnings.filterwarnings("ignore", r"cmp not installed")
 
 __all__ = [
     "ma_pca",
+    "__version__",
 ]
+
+del get_versions
