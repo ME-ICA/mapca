@@ -32,11 +32,9 @@ for author in authors:
         author_names.append(author)
 
 # Get package description from README
-raise Exception("{}\n{}".format(
-    Path(__file__).absolute(),
-    Path(__file__).parent.parent.joinpath("README.md").absolute()
-))
-readme_path = Path(__file__).parent.parent.joinpath("README.md")
+# Since this file is executed from ../setup.py, the path to the README is determined by the
+# location of setup.py.
+readme_path = Path(__file__).parent.joinpath("README.md")
 longdesc = readme_path.open().read()
 
 # Fields
