@@ -348,7 +348,7 @@ def ma_pca(img, mask_img, criterion="mdl", normalize=False):
     """
     from nilearn import masking
 
-    data = masking.apply_mask(img, mask_img).T  # not sure about transpose
+    data = masking.apply_mask(img, mask_img).T
     mask_vec = np.reshape(mask_img.get_fdata(), np.prod(mask_img.shape), order="F")
     pca = MovingAveragePCA(criterion=criterion, normalize=normalize)
     u = pca.fit_transform(data, shape_3d=img.shape[:3], mask_vec=mask_vec)
