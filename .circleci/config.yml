@@ -14,7 +14,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: conda-py37-v1-{{ checksum "mapca/info.py" }}-{{ checksum "mapca/setup.py" }}
+          key: conda-py37-v1-{{ checksum "mapca/info.py" }}-{{ checksum "setup.py" }}
       - run:
           name: Generate environment
           command: |
@@ -24,7 +24,7 @@ jobs:
               pip install .[tests]
             fi
       - save_cache:
-          key: conda-py37-v1-{{ checksum "mapca/info.py" }}-{{ checksum "mapca/setup.py" }}
+          key: conda-py37-v1-{{ checksum "mapca/info.py" }}-{{ checksum "setup.py" }}
           paths:
               - /opt/conda/envs/mapca_py37
 
@@ -35,7 +35,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: conda-py35-v1-{{ checksum "mapca/info.py" }}-{{ checksum "mapca/setup.py" }}
+          key: conda-py35-v1-{{ checksum "mapca/info.py" }}-{{ checksum "setup.py" }}
       - run:
           name: Generate environment
           command: |
@@ -53,7 +53,7 @@ jobs:
             mkdir /tmp/src/coverage
             mv /tmp/src/mapca/.coverage /tmp/src/coverage/.coverage.py35
       - save_cache:
-          key: conda-py35-v1-{{ checksum "mapca/info.py" }}-{{ checksum "mapca/setup.py" }}
+          key: conda-py35-v1-{{ checksum "mapca/info.py" }}-{{ checksum "setup.py" }}
           paths:
               - /opt/conda/envs/mapca_py35
       - persist_to_workspace:
@@ -68,7 +68,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: conda-py36-v1-{{ checksum "mapca/info.py" }}-{{ checksum "mapca/setup.py" }}
+          key: conda-py36-v1-{{ checksum "mapca/info.py" }}-{{ checksum "setup.py" }}
       - run:
           name: Generate environment
           command: |
@@ -86,7 +86,7 @@ jobs:
             mkdir /tmp/src/coverage
             mv /tmp/src/mapca/.coverage /tmp/src/coverage/.coverage.py36
       - save_cache:
-          key: conda-py36-v1-{{ checksum "mapca/info.py" }}-{{ checksum "mapca/setup.py" }}
+          key: conda-py36-v1-{{ checksum "mapca/info.py" }}-{{ checksum "setup.py" }}
           paths:
               - /opt/conda/envs/mapca_py36
       - persist_to_workspace:
@@ -101,7 +101,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: conda-py37-v1-{{ checksum "mapca/info.py" }}-{{ checksum "mapca/setup.py" }}
+          key: conda-py37-v1-{{ checksum "mapca/info.py" }}-{{ checksum "setup.py" }}
       - run:
           name: Running unit tests
           command: |
@@ -122,7 +122,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: conda-py37-v1-{{ checksum "mapca/info.py" }}-{{ checksum "mapca/setup.py" }}
+          key: conda-py37-v1-{{ checksum "mapca/info.py" }}-{{ checksum "setup.py" }}
       - run:
           name: Style check
           command: |
@@ -139,7 +139,7 @@ jobs:
           at: /tmp
       - checkout
       - restore_cache:
-          key: conda-py37-v1-{{ checksum "mapca/info.py" }}-{{ checksum "mapca/setup.py" }}
+          key: conda-py37-v1-{{ checksum "mapca/info.py" }}-{{ checksum "setup.py" }}
       - run:
           name: Merge coverage files
           command: |
