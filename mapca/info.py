@@ -32,6 +32,7 @@ for author in authors:
         author_names.append(author)
 
 # Get package description from README
+raise Exception("{}\n{}".format(__file__, Path(__file__).parent.parent.joinpath("README.md")))
 readme_path = Path(__file__).parent.parent.joinpath("README.md")
 longdesc = readme_path.open().read()
 
