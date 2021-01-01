@@ -145,10 +145,12 @@ jobs:
           command: |
             apt-get install -yqq curl
             source activate mapca_py37  # depends on makeenv37
+            cd /tmp/src/coverage/
+            coverage xml
       - store_artifacts:
           path: /tmp/src/coverage
       - codecov/upload:
-          file: /tmp/src/coverage/.coverage.py37
+          file: /tmp/src/coverage/coverage.xml
 
   deploy:
     docker:
