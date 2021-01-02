@@ -5,61 +5,46 @@
 
 def main():
     """ Install entry-point """
-    from inspect import currentframe, getfile
-    from io import open
-    from os import path as op
-
-    from setuptools import find_packages, setup
-
+    import os.path as op
     import versioneer
-    from mapca.info import (CLASSIFIERS, DOWNLOAD_URL, EXTRA_REQUIRES,
-                            PYTHON_REQUIRES, REQUIRES, TESTS_REQUIRES,
-                            __author__, __description__, __email__,
-                            __license__, __longdesc__, __maintainer__,
-                            __packagename__, __url__, __version__)
+    from inspect import getfile, currentframe
+    from io import open
+    from setuptools import setup, find_packages
+
+    ver_file = op.join("mapca", "info.py")
+    with open(ver_file) as f:
+        exec(f.read())
+    vars = locals()
+
+    root_dir = op.dirname(op.abspath(getfile(currentframe())))
+    cmdclass = versioneer.get_cmdclass()
 
     pkg_data = {
         "mapca": [
             "tests/data/*",
-            "reporting/data/*",
-            "reporting/data/html/*",
         ]
     }
 
-    root_dir = op.dirname(op.abspath(getfile(currentframe())))
-
-    version = None
-    cmdclass = {}
-    if op.isfile(op.join(root_dir, "mapca", "VERSION")):
-        with open(op.join(root_dir, "mapca", "VERSION")) as vfile:
-            version = vfile.readline().strip()
-        pkg_data["mapca"].insert(0, "VERSION")
-
-    if version is None:
-        version = versioneer.get_version()
-        cmdclass = versioneer.get_cmdclass()
-
     setup(
-        name=__packagename__,
-        version=__version__,
-        description=__description__,
-        long_description=__longdesc__,
-        author=__author__,
-        author_email=__email__,
-        maintainer=__maintainer__,
-        maintainer_email=__email__,
-        url=__url__,
-        license=__license__,
-        classifiers=CLASSIFIERS,
-        download_url=DOWNLOAD_URL,
+        name=vars["PACKAGENAME"],
+        version=vars["VERSION"],
+        description=vars["DESCRIPTION"],
+        long_description=vars["LONGDESC"],
+        author=vars["AUTHOR"],
+        author_email=vars["EMAIL"],
+        maintainer=vars["MAINTAINER"],
+        maintainer_email=vars["EMAIL"],
+        url=vars["URL"],
+        license=vars["LICENSE"],
+        classifiers=vars["CLASSIFIERS"],
+        download_url=vars["DOWNLOAD_URL"],
         # Dependencies handling
-        python_requires=PYTHON_REQUIRES,
-        install_requires=REQUIRES,
-        tests_require=TESTS_REQUIRES,
-        extras_require=EXTRA_REQUIRES,
-        entry_points={},
+        python_requires=vars["PYTHON_REQUIRES"],
+        install_requires=vars["REQUIRES"],
+        tests_require=vars["TESTS_REQUIRES"],
+        extras_require=vars["EXTRA_REQUIRES"],
+        entry_points=vars["ENTRY_POINTS"],
         packages=find_packages(exclude=("tests",)),
-        package_data=pkg_data,
         zip_safe=False,
         cmdclass=cmdclass,
     )

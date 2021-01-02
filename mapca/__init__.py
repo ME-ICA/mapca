@@ -3,17 +3,20 @@ mapca: A Python implementation of the moving average principal components analys
 GIFT.
 """
 
-import warnings
-
-from .due import Doi, due
-from .info import (__author__, __copyright__, __credits__, __description__,
-                   __email__, __license__, __longdesc__, __maintainer__,
-                   __packagename__, __status__, __url__, __version__)
+from .due import due, Doi
+from ._version import get_versions
 from .mapca import ma_pca
+
+__version__ = get_versions()["version"]
+
+import warnings
 
 # cmp is not used, so ignore nipype-generated warnings
 warnings.filterwarnings("ignore", r"cmp not installed")
 
 __all__ = [
     "ma_pca",
+    "__version__",
 ]
+
+del get_versions
