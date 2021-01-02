@@ -1,5 +1,4 @@
 """Unit tests for utils."""
-import nibabel as nib
 import numpy as np
 from pytest import raises
 

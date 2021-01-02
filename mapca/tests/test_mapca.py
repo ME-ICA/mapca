@@ -4,7 +4,6 @@ Tests for mapca
 
 import nibabel as nib
 import numpy as np
-from pytest import raises
 
 from mapca.mapca import ma_pca
 
