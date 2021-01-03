@@ -49,6 +49,7 @@ jobs:
           name: Running unit tests
           command: |
             source activate mapca_py35
+            export PYTHONPATH=/tmp/src/mapca:${PYTHONPATH}
             py.test --cov-append --cov-report term-missing --cov=mapca mapca/
             mkdir /tmp/src/coverage
             mv /tmp/src/mapca/.coverage /tmp/src/coverage/.coverage.py35
@@ -82,6 +83,7 @@ jobs:
           name: Running unit tests
           command: |
             source activate mapca_py36
+            export PYTHONPATH=/tmp/src/mapca:${PYTHONPATH}
             py.test --cov-append --cov-report term-missing --cov=mapca mapca/
             mkdir /tmp/src/coverage
             mv /tmp/src/mapca/.coverage /tmp/src/coverage/.coverage.py36
@@ -106,6 +108,7 @@ jobs:
           name: Running unit tests
           command: |
             apt-get install -y make
+            export PYTHONPATH=/tmp/src/mapca:${PYTHONPATH}
             source activate mapca_py37  # depends on makeenv_37
             py.test --cov-append --cov-report term-missing --cov=mapca mapca/
             mkdir /tmp/src/coverage
