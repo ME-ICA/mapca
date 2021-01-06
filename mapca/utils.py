@@ -198,19 +198,20 @@ def ent_rate_sp(data, sm_window):
 
     data_corr /= vcu
 
-    # Scale Parzen windows
-    parzen_window_2D = np.dot(parzen_w_1[np.newaxis, :].T, parzen_w_2[np.newaxis, :])
-    parzen_window_3D = np.zeros((2 * dims[0] - 1, 2 * dims[1] - 1, 2 * dims[2] - 1))
-    for m3 in range(dims[2] - 1):
-        parzen_window_3D[:, :, (dims[2] - 1) - m3] = np.dot(
-            parzen_window_2D, parzen_w_3[dims[2] - 1 - m3]
-        )
-        parzen_window_3D[:, :, (dims[2] - 1) + m3] = np.dot(
-            parzen_window_2D, parzen_w_3[dims[2] - 1 + m3]
-        )
+    if sm_window:
+        # Scale Parzen windows
+        parzen_window_2D = np.dot(parzen_w_1[np.newaxis, :].T, parzen_w_2[np.newaxis, :])
+        parzen_window_3D = np.zeros((2 * dims[0] - 1, 2 * dims[1] - 1, 2 * dims[2] - 1))
+        for m3 in range(dims[2] - 1):
+            parzen_window_3D[:, :, (dims[2] - 1) - m3] = np.dot(
+                parzen_window_2D, parzen_w_3[dims[2] - 1 - m3]
+            )
+            parzen_window_3D[:, :, (dims[2] - 1) + m3] = np.dot(
+                parzen_window_2D, parzen_w_3[dims[2] - 1 + m3]
+            )
+        # Apply 3D Parzen Window
+        data_corr *= parzen_window_3D
 
-    # Apply 3D Parzen Window
-    data_corr *= parzen_window_3D
     data_fft = abs(fftshift(fftn(data_corr)))
     data_fft[data_fft < 1e-4] = 1e-4
 
