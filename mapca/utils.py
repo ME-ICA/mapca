@@ -159,19 +159,6 @@ def ent_rate_sp(data, sm_window):
         raise ValueError("Divide by zero encountered.")
     data = data / data_std
 
-    if sm_window:
-        M = [int(i) for i in np.ceil(np.array(dims) / 10)]
-
-        # Get Parzen window for each spatial direction
-        parzen_w_3 = np.zeros((2 * dims[2] - 1,))
-        parzen_w_3[(dims[2] - M[2] - 1) : (dims[2] + M[2])] = _parzen_win(2 * M[2] + 1)
-
-        parzen_w_2 = np.zeros((2 * dims[1] - 1,))
-        parzen_w_2[(dims[1] - M[1] - 1) : (dims[1] + M[1])] = _parzen_win(2 * M[1] + 1)
-
-        parzen_w_1 = np.zeros((2 * dims[0] - 1,))
-        parzen_w_1[(dims[0] - M[0] - 1) : (dims[0] + M[0])] = _parzen_win(2 * M[0] + 1)
-
     # Apply windows to 3D
     # TODO: replace correlate2d with 3d if possible
     data_corr = np.zeros((2 * dims[0] - 1, 2 * dims[1] - 1, 2 * dims[2] - 1))
@@ -199,6 +186,18 @@ def ent_rate_sp(data, sm_window):
     data_corr /= vcu
 
     if sm_window:
+        M = [int(i) for i in np.ceil(np.array(dims) / 10)]
+
+        # Get Parzen window for each spatial direction
+        parzen_w_3 = np.zeros((2 * dims[2] - 1,))
+        parzen_w_3[(dims[2] - M[2] - 1) : (dims[2] + M[2])] = _parzen_win(2 * M[2] + 1)
+
+        parzen_w_2 = np.zeros((2 * dims[1] - 1,))
+        parzen_w_2[(dims[1] - M[1] - 1) : (dims[1] + M[1])] = _parzen_win(2 * M[1] + 1)
+
+        parzen_w_1 = np.zeros((2 * dims[0] - 1,))
+        parzen_w_1[(dims[0] - M[0] - 1) : (dims[0] + M[0])] = _parzen_win(2 * M[0] + 1)
+
         # Scale Parzen windows
         parzen_window_2D = np.dot(parzen_w_1[np.newaxis, :].T, parzen_w_2[np.newaxis, :])
         parzen_window_3D = np.zeros((2 * dims[0] - 1, 2 * dims[1] - 1, 2 * dims[2] - 1))
