@@ -2,8 +2,10 @@
 Integration test for mapca.
 """
 
-import nibabel as nib
 import os.path as op
+
+import nibabel as nib
+import pytest
 
 from mapca.mapca import ma_pca
 
@@ -23,7 +25,10 @@ def get_resources_path():
     return op.abspath(op.join(op.dirname(__file__), "resources") + op.sep)
 
 
-def test_integration():
+def test_integration(skip_integration):
+
+    if skip_integration:
+        pytest.skip('Skipping integration test')
 
     # Import data
     data_img = nib.load(op.join(get_resources_path(), "data.nii.gz"))
