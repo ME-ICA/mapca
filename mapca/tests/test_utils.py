@@ -58,6 +58,7 @@ def test_ent_rate_sp():
     Check that ent_rate_sp runs correctly, i.e. returns a float
     """
     test_data = np.random.rand(200, 10, 10)
+    ent_rate = ent_rate_sp(test_data, 0)
     ent_rate = ent_rate_sp(test_data, 1)
     assert isinstance(ent_rate, float)
     assert ent_rate.ndim == 0
