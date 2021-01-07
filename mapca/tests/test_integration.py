@@ -3,7 +3,6 @@ Integration test for mapca.
 """
 
 import nibabel as nib
-import numpy as np
 import os.path as op
 
 from mapca.mapca import ma_pca
