@@ -49,7 +49,7 @@ jobs:
           name: Running unit tests
           command: |
             source activate mapca_py35
-            py.test --skipintegration --cov-append --cov-report term-missing --cov=mapca mapca/
+            make unittest
             mkdir /tmp/src/coverage
             mv /tmp/src/mapca/.coverage /tmp/src/coverage/.coverage.py35
       - save_cache:
@@ -82,7 +82,7 @@ jobs:
           name: Running unit tests
           command: |
             source activate mapca_py36
-            py.test --skipintegration --cov-append --cov-report term-missing --cov=mapca mapca/
+            make unittest
             mkdir /tmp/src/coverage
             mv /tmp/src/mapca/.coverage /tmp/src/coverage/.coverage.py36
       - save_cache:
@@ -107,7 +107,7 @@ jobs:
           command: |
             apt-get install -y make
             source activate mapca_py37  # depends on makeenv_37
-            py.test --skipintegration --cov-append --cov-report term-missing --cov=mapca mapca/
+            make unittest
             mkdir /tmp/src/coverage
             mv /tmp/src/mapca/.coverage /tmp/src/coverage/.coverage.py37
       - persist_to_workspace:
@@ -128,7 +128,7 @@ jobs:
           command: |
             apt-get install -y make
             source activate mapca_py37  # depends on makeenv_37
-            py.test --log-cli-level=INFO --cov-append --cov-report term-missing --cov=mapca -k test_integration mapca/tests/test_integration.py
+            make integration
             mkdir /tmp/src/coverage
             mv /tmp/src/mapca/.coverage /tmp/src/coverage/.coverage.py37
       - persist_to_workspace:
@@ -149,7 +149,7 @@ jobs:
           command: |
             apt-get install -yqq make
             source activate mapca_py37  # depends on makeenv37
-            flake8 mapca
+            make lint
 
   merge_coverage:
     working_directory: /tmp/src/mapca
