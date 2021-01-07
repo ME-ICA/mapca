@@ -30,8 +30,4 @@ def test_integration():
     data_img = nib.load(op.join(get_resources_path(), "data.nii.gz"))
     mask_img = nib.load(op.join(get_resources_path(), "mask.nii.gz"))
 
-    breakpoint()
-
     u, s, varex_norm, v = ma_pca(data_img, mask_img)
-
-    breakpoint()
