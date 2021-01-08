@@ -7,6 +7,7 @@ import numpy as np
 from scipy.fftpack import fftn, fftshift
 from scipy.linalg import svd
 from scipy.signal import detrend, fftconvolve
+from scipy.stats import kurtosis
 
 LGR = logging.getLogger(__name__)
 
@@ -321,14 +322,9 @@ def _kurtn(data):
         tedana, this will be the kurtosis of each PCA component.
     """
 
-    kurt = np.zeros((data.shape[1], 1))
-
-    for i in range(data.shape[1]):
-        data_norm = detrend(data[:, i], type="constant")
-        data_norm /= np.std(data_norm)
-        kurt[i] = np.mean(data_norm ** 4) - 3
-
+    kurt = kurtosis(data, axis=0, fisher=True)
     kurt[kurt < 0] = 0
+    kurt = np.expand_dims(kurt, 1)
 
     return kurt
 
