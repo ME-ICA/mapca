@@ -95,7 +95,7 @@ def test_kurtn():
     """
     Unit test for _kurtn function
     """
-    test_data = np.random.rand(2, 3, 4)
+    test_data = np.random.rand(2, 3)
     kurt = _kurtn(test_data)
     assert kurt.shape == (3, 1)
 

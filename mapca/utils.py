@@ -6,7 +6,7 @@ import logging
 import numpy as np
 from scipy.fftpack import fftn, fftshift
 from scipy.linalg import svd
-from scipy.signal import detrend, fftconvolve
+from scipy.signal import fftconvolve
 from scipy.stats import kurtosis
 
 LGR = logging.getLogger(__name__)
