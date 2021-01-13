@@ -7,6 +7,7 @@ import numpy as np
 from scipy.fftpack import fftn, fftshift
 from scipy.linalg import svd
 from scipy.signal import detrend, fftconvolve
+from scipy.signal.windows import parzen
 
 LGR = logging.getLogger(__name__)
 
@@ -69,50 +70,6 @@ def _check_order(order_in):
         trivialwin = True
 
     return order_out, w, trivialwin
-
-
-def _parzen_win(n_points):
-    """
-    Returns the N-point Parzen (de la Valle-Poussin) window in a column vector.
-
-    Parameters
-    ----------
-    n_points : int
-        Number of non-zero points the window must contain
-
-    Returns
-    -------
-    parzen_w : 1D array
-        The Parzen window
-
-    Notes
-    -----
-    Maths are described in the following MATLAB documentation page:
-    https://www.mathworks.com/help/signal/ref/parzenwin.html
-
-    References
-    ----------
-    * Harris, Fredric J. “On the Use of Windows for Harmonic Analysis
-      with the Discrete Fourier Transform.” Proceedings of the IEEE.
-      Vol. 66, January 1978, pp. 51–83.
-    """
-
-    # Check for valid window length (i.e., n < 0)
-    n_points, parzen_w, trivialwin = _check_order(n_points)
-    if trivialwin:
-        return parzen_w
-
-    # Index vectors
-    k = np.arange(-(n_points - 1) / 2, ((n_points - 1) / 2) + 1)
-    k1 = k[k < -(n_points - 1) / 4]
-    k2 = k[abs(k) <= (n_points - 1) / 4]
-
-    # Equation 37 of [1]: window defined in three sections
-    parzen_w1 = 2 * (1 - abs(k1) / (n_points / 2)) ** 3
-    parzen_w2 = 1 - 6 * (abs(k2) / (n_points / 2)) ** 2 + 6 * (abs(k2) / (n_points / 2)) ** 3
-    parzen_w = np.hstack((parzen_w1, parzen_w2, parzen_w1[::-1])).T
-
-    return parzen_w
 
 
 def ent_rate_sp(data, sm_window):
@@ -190,13 +147,13 @@ def ent_rate_sp(data, sm_window):
 
         # Get Parzen window for each spatial direction
         parzen_w_3 = np.zeros((2 * dims[2] - 1,))
-        parzen_w_3[(dims[2] - M[2] - 1) : (dims[2] + M[2])] = _parzen_win(2 * M[2] + 1)
+        parzen_w_3[(dims[2] - M[2] - 1) : (dims[2] + M[2])] = parzen(2 * M[2] + 1)
 
         parzen_w_2 = np.zeros((2 * dims[1] - 1,))
-        parzen_w_2[(dims[1] - M[1] - 1) : (dims[1] + M[1])] = _parzen_win(2 * M[1] + 1)
+        parzen_w_2[(dims[1] - M[1] - 1) : (dims[1] + M[1])] = parzen(2 * M[1] + 1)
 
         parzen_w_1 = np.zeros((2 * dims[0] - 1,))
-        parzen_w_1[(dims[0] - M[0] - 1) : (dims[0] + M[0])] = _parzen_win(2 * M[0] + 1)
+        parzen_w_1[(dims[0] - M[0] - 1) : (dims[0] + M[0])] = parzen(2 * M[0] + 1)
 
         # Scale Parzen windows
         parzen_window_2D = np.dot(parzen_w_1[np.newaxis, :].T, parzen_w_2[np.newaxis, :])

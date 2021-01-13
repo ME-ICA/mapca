@@ -1,9 +1,10 @@
 """Unit tests for utils."""
 import numpy as np
+from scipy.signal.windows import parzen
 from pytest import raises
 
 from mapca.utils import (_autocorr, _check_order, _eigensp_adj, _icatb_svd,
-                         _kurtn, _parzen_win, _subsampling, ent_rate_sp)
+                         _kurtn, _subsampling, ent_rate_sp)
 
 
 def test_autocorr():
@@ -45,11 +46,11 @@ def test_check_order():
 def test_parzen_win():
     test_npoints = 3
     test_result = np.array([0.07407407, 1, 0.07407407])
-    win = _parzen_win(test_npoints)
+    win = parzen(test_npoints)
     assert np.allclose(win, test_result)
 
     test_npoints = 1
-    win = _parzen_win(test_npoints)
+    win = parzen(test_npoints)
     assert win == 1
 
 
