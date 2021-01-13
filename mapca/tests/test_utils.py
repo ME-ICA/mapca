@@ -3,7 +3,7 @@ import numpy as np
 from scipy.signal.windows import parzen
 from pytest import raises
 
-from mapca.utils import (_autocorr, _check_order, _eigensp_adj, _icatb_svd,
+from mapca.utils import (_autocorr, _eigensp_adj, _icatb_svd,
                          _kurtn, _subsampling, ent_rate_sp)
 
 
@@ -15,32 +15,6 @@ def test_autocorr():
     test_result = np.array([30, 20, 11, 4])
     autocorr = _autocorr(test_data)
     assert np.array_equal(autocorr, test_result)
-
-
-def test_check_order():
-    """
-    Unit test on _check_order function
-    """
-    test_order = -1
-    with raises(ValueError) as errorinfo:
-        ord_out, w, trivwin = _check_order(test_order)
-    assert "Order cannot be less than zero" in str(errorinfo.value)
-
-    test_order = 0
-    ord_out, w, trivwin = _check_order(test_order)
-    assert ord_out == test_order
-    assert trivwin
-
-    test_order = 1
-    ord_out, w, trivwin = _check_order(test_order)
-    assert ord_out == test_order
-    assert w == 1
-    assert trivwin
-
-    test_order = 4
-    ord_out, w, trivwin = _check_order(test_order)
-    assert ord_out == test_order
-    assert not trivwin
 
 
 def test_parzen_win():

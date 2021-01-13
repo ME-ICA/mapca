@@ -31,47 +31,6 @@ def _autocorr(data):
     return u[u.size // 2 :]
 
 
-def _check_order(order_in):
-    """
-    Checks the order passed to the window functions.
-
-    Parameters
-    ----------
-    order_in : int
-        The order to be passed to the window function
-
-    Returns
-    -------
-    n_out : ndarray
-        An integer order array
-    w : list
-        The window to be used
-    trivialwin : boolean
-        Whether the window is trivial (w in [0,1])
-    """
-
-    w = []
-    trivialwin = False
-
-    # Special case of negative orders:
-    if order_in < 0:
-        raise ValueError("Order cannot be less than zero.")
-
-    order_out = np.round(order_in)
-    if not np.array_equal(order_in, order_out):
-        LGR.warning("Rounded order to nearest integer")
-
-    # Special cases:
-    if not order_out or order_out == 0:
-        w = np.zeros((0, 1))  # Empty matrix: 0-by-1
-        trivialwin = True
-    elif order_out == 1:
-        w = 1
-        trivialwin = True
-
-    return order_out, w, trivialwin
-
-
 def ent_rate_sp(data, sm_window):
     """
     Calculate the entropy rate of a stationary Gaussian random process using
