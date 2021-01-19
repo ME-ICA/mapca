@@ -146,7 +146,8 @@ class MovingAveragePCA:
             dat = np.zeros((int(np.sum(mask_s_1d)), n_timepoints))
             LGR.info("Generating subsampled i.i.d. data...")
             for i_vol in range(n_timepoints):
-                x_single = X[:, i_vol]
+                x_single = np.zeros(n_x * n_y * n_z)
+                x_single[mask_vec == 1] = X[:, i_vol]
                 x_single = np.reshape(x_single, (n_x, n_y, n_z), order="F")
                 dat0 = utils._subsampling(x_single, sub_iid_sp_median)
                 dat0 = np.reshape(dat0, np.prod(dat0.shape), order="F")
