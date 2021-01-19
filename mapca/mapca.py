@@ -81,9 +81,10 @@ class MovingAveragePCA:
         n_samples, n_timepoints = X.shape
 
         if self.normalize:
-            self.scaler_ = StandardScaler(with_mean=True, with_std=True)
+            # self.scaler_ = StandardScaler(with_mean=True, with_std=True)
             # TODO: determine if tedana is already normalizing before this
-            X = self.scaler_.fit_transform(X)  # This was X_sc
+            # X = self.scaler_.fit_transform(X)  # This was X_sc
+            X = ((X.T - X.T.mean(axis=0)) / X.T.std(axis=0)).T
 
         LGR.info("Performing SVD on original data...")
         V, eigenvalues = utils._icatb_svd(X, n_timepoints)
@@ -146,15 +147,17 @@ class MovingAveragePCA:
             dat = np.zeros((int(np.sum(mask_s_1d)), n_timepoints))
             LGR.info("Generating subsampled i.i.d. data...")
             for i_vol in range(n_timepoints):
-                x_single = X[:, i_vol]
+                x_single = np.zeros(n_x * n_y * n_z)
+                x_single[mask_vec == 1] = X[:, i_vol]
                 x_single = np.reshape(x_single, (n_x, n_y, n_z), order="F")
                 dat0 = utils._subsampling(x_single, sub_iid_sp_median)
                 dat0 = np.reshape(dat0, np.prod(dat0.shape), order="F")
                 dat[:, i_vol] = dat0[mask_s_1d == 1]
 
             # Perform Variance Normalization
-            scaler = StandardScaler(with_mean=True, with_std=True)
-            dat = scaler.fit_transform(dat)
+            # scaler = StandardScaler(with_mean=True, with_std=True)
+            # dat = scaler.fit_transform(dat)
+            data = ((dat.T - dat.T.mean(axis=0)) / dat.T.std(axis=0)).T
 
             # (completed)
             LGR.info("Performing SVD on subsampled i.i.d. data...")
