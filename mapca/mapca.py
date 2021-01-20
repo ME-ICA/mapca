@@ -310,7 +310,7 @@ class MovingAveragePCA:
         """
         X_orig = np.dot(np.dot(X, np.diag(self.explained_variance_)), self.components_)
         if self.normalize:
-            X_orig = self.scaler_.inverse_transform(X_orig)
+            X_orig = self.scaler_.inverse_transform(X_orig.T).T
         return X_orig
 
 
