@@ -80,10 +80,10 @@ class MovingAveragePCA:
         n_x, n_y, n_z = shape_3d
         n_samples, n_timepoints = X.shape
 
+        self.scaler_ = StandardScaler(with_mean=True, with_std=True)
         if self.normalize:
-            self.scaler_ = StandardScaler(with_mean=True, with_std=True)
             # TODO: determine if tedana is already normalizing before this
-            X = self.scaler_.fit_transform(X)  # This was X_sc
+            X = self.scaler_.fit_transform(X.T).T  # This was X_sc
             # X = ((X.T - X.T.mean(axis=0)) / X.T.std(axis=0)).T
 
         LGR.info("Performing SVD on original data...")
@@ -155,8 +155,8 @@ class MovingAveragePCA:
                 dat[:, i_vol] = dat0[mask_s_1d == 1]
 
             # Perform Variance Normalization
-            scaler = StandardScaler(with_mean=True, with_std=True)
-            dat = scaler.fit_transform(dat)
+            # scaler = StandardScaler(with_mean=True, with_std=True)
+            dat = self.scaler_.fit_transform(dat.T).T
             # data = ((dat.T - dat.T.mean(axis=0)) / dat.T.std(axis=0)).T
 
             # (completed)
