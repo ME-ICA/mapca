@@ -34,8 +34,7 @@ def test_integration(skip_integration):
     # Import data
     data_img = nib.load(op.join(get_resources_path(), "data.nii.gz"))
     mask_img = nib.load(op.join(get_resources_path(), "mask.nii.gz"))
-
-    u, s, varex_norm, v = ma_pca(data_img, mask_img)
+    u, s, varex_norm, v = ma_pca(data_img, mask_img, normalize=True)
 
     voxel_comp_weights = np.load(op.join(get_resources_path(), "voxel_comp_weights.npy"))
     varex = np.load(op.join(get_resources_path(), "varex.npy"))
