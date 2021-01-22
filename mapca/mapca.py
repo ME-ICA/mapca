@@ -350,7 +350,7 @@ def ma_pca(img, mask_img, criterion="mdl", normalize=False):
     v : array-like, shape (n_timepoints, n_components)
         Component timeseries.
     """
-    from nilearn import masking
+    # from nilearn import masking
 
     # data = masking.apply_mask(img, mask_img).T
     # mask_vec = np.reshape(mask_img.get_fdata(), np.prod(mask_img.shape), order="F")
