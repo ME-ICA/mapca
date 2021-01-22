@@ -351,14 +351,14 @@ def ma_pca(img, mask_img, criterion="mdl", normalize=False):
     """
     from nilearn import masking
 
-    data = masking.apply_mask(img, mask_img).T
-    mask_vec = np.reshape(mask_img.get_fdata(), np.prod(mask_img.shape), order="F")
-    # img = img.get_fdata()
-    # mask_img = mask_img.get_fdata()
-    # [Nx, Ny, Nz, Nt] = img.shape
-    # data_nib_V = np.reshape(img, (Nx * Ny * Nz, Nt), order='F')
-    # mask_vec = np.reshape(mask_img, Nx * Ny * Nz, order='F')
-    # data = data_nib_V[mask_vec == 1, :]
+    # data = masking.apply_mask(img, mask_img).T
+    # mask_vec = np.reshape(mask_img.get_fdata(), np.prod(mask_img.shape), order="F")
+    img = img.get_fdata()
+    mask_img = mask_img.get_fdata()
+    [Nx, Ny, Nz, Nt] = img.shape
+    data_nib_V = np.reshape(img, (Nx * Ny * Nz, Nt), order='F')
+    mask_vec = np.reshape(mask_img, Nx * Ny * Nz, order='F')
+    data = data_nib_V[mask_vec == 1, :]
     pca = MovingAveragePCA(criterion=criterion, normalize=normalize)
     u = pca.fit_transform(data, shape_3d=img.shape[:3], mask_vec=mask_vec)
     s = pca.explained_variance_
