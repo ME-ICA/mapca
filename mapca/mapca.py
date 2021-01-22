@@ -227,6 +227,7 @@ class MovingAveragePCA:
         self.n_features_ = ppca.n_features_
         self.n_samples_ = ppca.n_samples_
         self.noise_variance_ = ppca.noise_variance_
+        self.u = np.dot(np.dot(X, self.components_.T), np.diag(1.0 / self.explained_variance_))
 
     def fit(self, X, shape_3d, mask_vec):
         """Fit the model with X.
@@ -286,9 +287,9 @@ class MovingAveragePCA:
         -----
         This is different from scikit-learn's approach, which ignores explained variance.
         """
-        X = self.scaler_.fit_transform(X.T).T
-        X_new = np.dot(np.dot(X, self.components_.T), np.diag(1.0 / self.explained_variance_))
-        return X_new
+        # X = self.scaler_.fit_transform(X.T).T
+        # X_new = np.dot(np.dot(X, self.components_.T), np.diag(1.0 / self.explained_variance_))
+        return self.u
 
     def inverse_transform(self, X):
         """Transform data back to its original space.
