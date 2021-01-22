@@ -286,6 +286,7 @@ class MovingAveragePCA:
         -----
         This is different from scikit-learn's approach, which ignores explained variance.
         """
+        X = self.scaler_.fit_transform(X.T).T
         X_new = np.dot(np.dot(X, self.components_.T), np.diag(1.0 / self.explained_variance_))
         return X_new
 
@@ -352,6 +353,12 @@ def ma_pca(img, mask_img, criterion="mdl", normalize=False):
 
     data = masking.apply_mask(img, mask_img).T
     mask_vec = np.reshape(mask_img.get_fdata(), np.prod(mask_img.shape), order="F")
+    # img = img.get_fdata()
+    # mask_img = mask_img.get_fdata()
+    # [Nx, Ny, Nz, Nt] = img.shape
+    # data_nib_V = np.reshape(img, (Nx * Ny * Nz, Nt), order='F')
+    # mask_vec = np.reshape(mask_img, Nx * Ny * Nz, order='F')
+    # data = data_nib_V[mask_vec == 1, :]
     pca = MovingAveragePCA(criterion=criterion, normalize=normalize)
     u = pca.fit_transform(data, shape_3d=img.shape[:3], mask_vec=mask_vec)
     s = pca.explained_variance_

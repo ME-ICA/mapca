@@ -41,7 +41,7 @@ def test_integration(skip_integration):
     varex_norm_test = np.load(op.join(get_resources_path(), "varex_norm.npy"))
     comp_ts = np.load(op.join(get_resources_path(), "comp_ts.npy"))
 
-    assert np.allclose(voxel_comp_weights, u)
     assert np.allclose(varex, s)
     assert np.allclose(varex_norm_test, varex_norm)
     assert np.allclose(comp_ts, v)
+    assert np.allclose(voxel_comp_weights, u)
