@@ -3,7 +3,6 @@ Integration test for mapca.
 """
 import nibabel as nib
 import numpy as np
-import pytest
 import shutil
 from os.path import split
 
