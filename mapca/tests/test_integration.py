@@ -13,9 +13,6 @@ from mapca.mapca import ma_pca
 def test_integration(test_img, test_mask, test_ts, test_varex,
                      test_varex_norm, test_weights):
 
-    if skip_integration:
-        pytest.skip('Skipping integration test')
-
     test_path, _ = split(test_img)
 
     # Import data
