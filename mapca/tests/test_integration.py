@@ -4,6 +4,8 @@ Integration test for mapca.
 import nibabel as nib
 import numpy as np
 import pytest
+import shutil
+from os.path import split
 
 from mapca.mapca import ma_pca
 
@@ -13,6 +15,8 @@ def test_integration(skip_integration, test_img, test_mask, test_ts, test_varex,
 
     if skip_integration:
         pytest.skip('Skipping integration test')
+
+    test_path, _ = split(test_img)
 
     # Import data
     data_img = nib.load(test_img)
@@ -30,3 +34,6 @@ def test_integration(skip_integration, test_img, test_mask, test_ts, test_varex,
     assert np.allclose(varex, s)
     assert np.allclose(v_norm, varex_norm)
     assert np.allclose(comp_ts, v)
+
+    # Remove files
+    shutil.rmtree(test_path)
