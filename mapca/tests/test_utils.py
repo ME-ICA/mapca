@@ -3,7 +3,7 @@ import numpy as np
 from pytest import raises
 
 from mapca.utils import (_autocorr, _check_order, _eigensp_adj, _icatb_svd,
-                         _kurtn, _parzen_win, _subsampling, ent_rate_sp)
+                         _parzen_win, _subsampling, ent_rate_sp)
 
 
 def test_autocorr():
