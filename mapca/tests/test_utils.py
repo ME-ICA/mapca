@@ -91,15 +91,6 @@ def test_subsampling():
     assert sub_data.shape == (1, 2, 2)
 
 
-def test_kurtn():
-    """
-    Unit test for _kurtn function
-    """
-    test_data = np.random.rand(2, 3)
-    kurt = _kurtn(test_data)
-    assert kurt.shape == (3, 1)
-
-
 def test_icatb_svd():
     """
     Unit test for icatb_svd function.
