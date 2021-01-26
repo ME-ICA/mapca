@@ -3,6 +3,7 @@
 import logging
 
 import numpy as np
+from scipy.stats import kurtosis
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
@@ -98,10 +99,13 @@ class MovingAveragePCA:
         # Using 12 gaussian components from middle, top and bottom gaussian
         # components to determine the subsampling depth.
         # Final subsampling depth is determined using median
-        kurtv1 = utils._kurtn(dataN)
-        kurtv1[eigenvalues > np.mean(eigenvalues)] = 1000
+        kurt = kurtosis(dataN, axis=0, fisher=True)
+        kurt[kurt < 0] = 0
+        kurt = np.expand_dims(kurt, 1)
+
+        kurt[eigenvalues > np.mean(eigenvalues)] = 1000
         idx_gauss = np.where(
-            ((kurtv1[:, 0] < 0.3) & (kurtv1[:, 0] > 0) & (eigenvalues > np.finfo(float).eps)) == 1
+            ((kurt[:, 0] < 0.3) & (kurt[:, 0] > 0) & (eigenvalues > np.finfo(float).eps)) == 1
         )[
             0
         ]  # NOTE: make sure np.where is giving us just one tuple
