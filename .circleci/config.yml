@@ -49,7 +49,7 @@ jobs:
           name: Running unit tests
           command: |
             source activate mapca_py35
-            py.test --cov-append --cov-report term-missing --cov=mapca mapca/
+            py.test --ignore mapca/tests/test_integration.py --cov-append --cov-report term-missing --cov=mapca mapca/
             mkdir /tmp/src/coverage
             mv /tmp/src/mapca/.coverage /tmp/src/coverage/.coverage.py35
       - save_cache:
@@ -82,7 +82,7 @@ jobs:
           name: Running unit tests
           command: |
             source activate mapca_py36
-            py.test --cov-append --cov-report term-missing --cov=mapca mapca/
+            py.test --ignore mapca/tests/test_integration.py --cov-append --cov-report term-missing --cov=mapca mapca/
             mkdir /tmp/src/coverage
             mv /tmp/src/mapca/.coverage /tmp/src/coverage/.coverage.py36
       - save_cache:
@@ -107,7 +107,28 @@ jobs:
           command: |
             apt-get install -y make
             source activate mapca_py37  # depends on makeenv_37
-            py.test --cov-append --cov-report term-missing --cov=mapca mapca/
+            py.test --ignore mapca/tests/test_integration.py --cov-append --cov-report term-missing --cov=mapca mapca/
+            mkdir /tmp/src/coverage
+            mv /tmp/src/mapca/.coverage /tmp/src/coverage/.coverage.py37
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+              - src/coverage/.coverage.py37
+
+  integrationtest_37:
+    docker:
+      - image: continuumio/miniconda3
+    working_directory: /tmp/src/mapca
+    steps:
+      - checkout
+      - restore_cache:
+          key: conda-py37-v1-{{ checksum "mapca/info.py" }}-{{ checksum "setup.py" }}
+      - run:
+          name: Running unit tests
+          command: |
+            apt-get install -y make
+            source activate mapca_py37  # depends on makeenv_37
+            py.test --log-cli-level=INFO --cov-append --cov-report term-missing --cov=mapca -k test_integration mapca/tests/test_integration.py
             mkdir /tmp/src/coverage
             mv /tmp/src/mapca/.coverage /tmp/src/coverage/.coverage.py37
       - persist_to_workspace:
@@ -183,6 +204,9 @@ workflows:
       - unittest_35
       - unittest_36
       - unittest_37:
+          requires:
+            - makeenv_37
+      - integrationtest_37:
           requires:
             - makeenv_37
       - style_check:
