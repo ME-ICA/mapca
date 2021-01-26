@@ -80,10 +80,11 @@ class MovingAveragePCA:
         n_x, n_y, n_z = shape_3d
         n_samples, n_timepoints = X.shape
 
+        self.scaler_ = StandardScaler(with_mean=True, with_std=True)
         if self.normalize:
-            self.scaler_ = StandardScaler(with_mean=True, with_std=True)
             # TODO: determine if tedana is already normalizing before this
-            X = self.scaler_.fit_transform(X)  # This was X_sc
+            X = self.scaler_.fit_transform(X.T).T  # This was X_sc
+            # X = ((X.T - X.T.mean(axis=0)) / X.T.std(axis=0)).T
 
         LGR.info("Performing SVD on original data...")
         V, eigenvalues = utils._icatb_svd(X, n_timepoints)
@@ -146,15 +147,17 @@ class MovingAveragePCA:
             dat = np.zeros((int(np.sum(mask_s_1d)), n_timepoints))
             LGR.info("Generating subsampled i.i.d. data...")
             for i_vol in range(n_timepoints):
-                x_single = X[:, i_vol]
+                x_single = np.zeros(n_x * n_y * n_z)
+                x_single[mask_vec == 1] = X[:, i_vol]
                 x_single = np.reshape(x_single, (n_x, n_y, n_z), order="F")
                 dat0 = utils._subsampling(x_single, sub_iid_sp_median)
                 dat0 = np.reshape(dat0, np.prod(dat0.shape), order="F")
                 dat[:, i_vol] = dat0[mask_s_1d == 1]
 
             # Perform Variance Normalization
-            scaler = StandardScaler(with_mean=True, with_std=True)
-            dat = scaler.fit_transform(dat)
+            # scaler = StandardScaler(with_mean=True, with_std=True)
+            dat = self.scaler_.fit_transform(dat.T).T
+            # data = ((dat.T - dat.T.mean(axis=0)) / dat.T.std(axis=0)).T
 
             # (completed)
             LGR.info("Performing SVD on subsampled i.i.d. data...")
@@ -224,6 +227,7 @@ class MovingAveragePCA:
         self.n_features_ = ppca.n_features_
         self.n_samples_ = ppca.n_samples_
         self.noise_variance_ = ppca.noise_variance_
+        self.u = np.dot(np.dot(X, self.components_.T), np.diag(1.0 / self.explained_variance_))
 
     def fit(self, X, shape_3d, mask_vec):
         """Fit the model with X.
@@ -283,8 +287,9 @@ class MovingAveragePCA:
         -----
         This is different from scikit-learn's approach, which ignores explained variance.
         """
-        X_new = np.dot(np.dot(X, self.components_.T), np.diag(1.0 / self.explained_variance_))
-        return X_new
+        # X = self.scaler_.fit_transform(X.T).T
+        # X_new = np.dot(np.dot(X, self.components_.T), np.diag(1.0 / self.explained_variance_))
+        return self.u
 
     def inverse_transform(self, X):
         """Transform data back to its original space.
@@ -307,7 +312,7 @@ class MovingAveragePCA:
         """
         X_orig = np.dot(np.dot(X, np.diag(self.explained_variance_)), self.components_)
         if self.normalize:
-            X_orig = self.scaler_.inverse_transform(X_orig)
+            X_orig = self.scaler_.inverse_transform(X_orig.T).T
         return X_orig
 
 
@@ -345,10 +350,16 @@ def ma_pca(img, mask_img, criterion="mdl", normalize=False):
     v : array-like, shape (n_timepoints, n_components)
         Component timeseries.
     """
-    from nilearn import masking
+    # from nilearn import masking
 
-    data = masking.apply_mask(img, mask_img).T
-    mask_vec = np.reshape(mask_img.get_fdata(), np.prod(mask_img.shape), order="F")
+    # data = masking.apply_mask(img, mask_img).T
+    # mask_vec = np.reshape(mask_img.get_fdata(), np.prod(mask_img.shape), order="F")
+    img = img.get_fdata()
+    mask_img = mask_img.get_fdata()
+    [Nx, Ny, Nz, Nt] = img.shape
+    data_nib_V = np.reshape(img, (Nx * Ny * Nz, Nt), order='F')
+    mask_vec = np.reshape(mask_img, Nx * Ny * Nz, order='F')
+    data = data_nib_V[mask_vec == 1, :]
     pca = MovingAveragePCA(criterion=criterion, normalize=normalize)
     u = pca.fit_transform(data, shape_3d=img.shape[:3], mask_vec=mask_vec)
     s = pca.explained_variance_
