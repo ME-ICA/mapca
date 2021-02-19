@@ -77,17 +77,7 @@ def ent_rate_sp(data, sm_window):
     data = data / data_std
 
     # Apply windows to 3D
-    # TODO: replace correlate2d with 3d if possible
-    data_corr = np.zeros((2 * dims[0] - 1, 2 * dims[1] - 1, 2 * dims[2] - 1))
-    for m3 in range(dims[2] - 1):
-        temp = np.zeros((2 * dims[0] - 1, 2 * dims[1] - 1))
-        for k in range(dims[2] - m3):
-            temp += fftconvolve(data[:, :, k + m3], data[::-1, ::-1, k])
-            # default option:
-            # computes raw correlations with NO normalization
-            # -- Matlab help on xcorr
-        data_corr[:, :, (dims[2] - 1) - m3] = temp
-        data_corr[:, :, (dims[2] - 1) + m3] = temp
+    data_corr = fftconvolve(data, np.flip(data))
 
     # Create bias-correcting vectors
     v1 = np.hstack((np.arange(1, dims[0] + 1), np.arange(dims[0] - 1, 0, -1)))[np.newaxis, :]
