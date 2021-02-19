@@ -290,19 +290,8 @@ def _subsampling(data, sub_depth):
         Subsampled data
     """
 
-    # First index from which to start subsampling for each dimension
-    idx_0 = [0, 0, 0]
-    ndims = data.shape
-
-    if data.ndim == 3 and np.min(ndims) != 1:  # 3D
-        out = data[np.arange(idx_0[0], ndims[0], sub_depth), :, :][
-            :, np.arange(idx_0[1], ndims[1], sub_depth), :
-        ][:, :, np.arange(idx_0[2], ndims[2], sub_depth)]
-    else:
-        raise ValueError(
-            "Unrecognized matrix dimension! )" "Input array must be 3D with min dimension > 1."
-        )
-
+    slices = [slice(None, None, sub_depth)] * data.ndim
+    out = data[tuple(slices)]
     return out
 
 

@@ -83,14 +83,21 @@ def test_subsampling():
     """
     Unit test for subsampling function
     """
+    # 1D input
     test_data = np.array([1])
-    with raises(ValueError) as errorinfo:
-        sub_data = _subsampling(test_data, 1)
-    assert "Unrecognized matrix dimension" in str(errorinfo.value)
-
+    sub_data = _subsampling(test_data, sub_depth=2)
+    assert sub_data.shape == (1,)
+    assert np.all(sub_data == test_data[::2])
+    # 2D input
+    test_data = np.random.rand(6, 9)
+    sub_data = _subsampling(test_data, sub_depth=3)
+    assert sub_data.shape == (2, 3)
+    assert np.all(sub_data == test_data[::3, ::3])
+    # 3D input
     test_data = np.random.rand(2, 3, 4)
     sub_data = _subsampling(test_data, sub_depth=2)
     assert sub_data.shape == (1, 2, 2)
+    assert np.all(sub_data == test_data[::2, ::2, ::2])
 
 
 def test_icatb_svd():
