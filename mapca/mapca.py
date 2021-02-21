@@ -71,6 +71,14 @@ class MovingAveragePCA:
 
         Equal to the average of (min(n_features, n_samples) - n_components) smallest
         eigenvalues of the covariance matrix of X.
+
+    References
+    ----------
+    Li, Y. O., Adali, T., & Calhoun, V. D. (2007). Estimating the number of
+    independent components for functional magnetic resonance imaging data.
+    Human Brain Mapping, 28(11), 1251–1266. https://doi.org/10.1002/hbm.20359
+
+    Translated from the MATLAB code available in GIFT. https://trendscenter.org/software/gift/
     """
 
     def __init__(self, criterion="mdl", normalize=True):
