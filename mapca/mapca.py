@@ -86,6 +86,11 @@ class MovingAveragePCA:
         self.normalize = normalize
 
     def _fit(self, X, shape_3d, mask_vec):
+        LGR.info("Performing dimensionality reduction based on GIFT "
+                 "(https://trendscenter.org/software/gift/) and Li, Y. O., Adali, T., "
+                 "& Calhoun, V. D. (2007). Estimating the number of independent components "
+                 "for functional magnetic resonance imaging data. Human Brain Mapping, 28(11), "
+                 "1251–1266. https://doi.org/10.1002/hbm.20359")
         n_x, n_y, n_z = shape_3d
         n_samples, n_timepoints = X.shape
 
