@@ -78,21 +78,20 @@ def test_MovingAveragePCA():
     n_voxels_in_mask = np.sum(test_mask)
 
     test_data = masking.apply_mask(test_img, test_mask_img).T
-    mask_vec = np.reshape(test_mask, np.prod(test_mask.shape), order="F")
 
     # Testing AIC option
     pca = MovingAveragePCA(criterion="mdl", normalize=True)
-    u = pca.fit_transform(test_data, shape_3d=test_img.shape[:3], mask_vec=mask_vec)
-    assert u.shape[0] == n_voxels_in_mask
+    u = pca.fit_transform(test_img, test_mask_img)
+    assert pca.u_.shape[0] == n_voxels_in_mask
     assert pca.explained_variance_.shape[0] == 1
     assert pca.explained_variance_ratio_.shape[0] == 1
     assert pca.components_.T.shape[0] == N_TIMEPOINTS
 
     # Test other stuff
     pca2 = MovingAveragePCA(criterion="mdl", normalize=True)
-    pca2.fit(test_data, shape_3d=test_img.shape[:3], mask_vec=mask_vec)
-    u2 = pca2.transform(test_data)
-    assert np.array_equal(u2, u)
+    pca2.fit(test_img, test_mask_img)
+    u2 = pca2.transform(test_img)
+    assert np.array_equal(u2.get_fdata(), u.get_fdata())
 
-    test_data_est = pca2.inverse_transform(u2)
-    assert test_data_est.shape == test_data.shape
+    test_data_est = pca2.inverse_transform(u2, test_mask_img)
+    assert test_data_est.shape == test_img.shape
