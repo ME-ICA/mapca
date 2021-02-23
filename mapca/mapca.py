@@ -2,7 +2,9 @@
 """
 import logging
 
+import nibabel as nib
 import numpy as np
+from nilearn._utils import check_niimg_3d, check_niimg_4d
 from scipy.stats import kurtosis
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
@@ -35,6 +37,10 @@ class MovingAveragePCA:
     components_ : array, shape (n_components, n_features)
         Principal axes in feature space, representing the directions of maximum
         variance in the data. The components are sorted by explained_variance_.
+    u_ : array, shape (n_components, n_mask)
+        Component weight maps, limited to voxels in the mask.
+    u_nii_ : 4D nibabel.nifti1.Nifti1Image
+        Component weight maps, stored as a 4D niimg.
     explained_variance_ : array, shape (n_components,)
         The amount of variance explained by each of the selected components.
 
@@ -85,14 +91,26 @@ class MovingAveragePCA:
         self.criterion = criterion
         self.normalize = normalize
 
-    def _fit(self, X, shape_3d, mask_vec):
-        LGR.info("Performing dimensionality reduction based on GIFT "
-                 "(https://trendscenter.org/software/gift/) and Li, Y. O., Adali, T., "
-                 "& Calhoun, V. D. (2007). Estimating the number of independent components "
-                 "for functional magnetic resonance imaging data. Human Brain Mapping, 28(11), "
-                 "1251–1266. https://doi.org/10.1002/hbm.20359")
-        n_x, n_y, n_z = shape_3d
-        n_samples, n_timepoints = X.shape
+    def _fit(self, img, mask):
+        LGR.info(
+            "Performing dimensionality reduction based on GIFT "
+            "(https://trendscenter.org/software/gift/) and Li, Y. O., Adali, T., "
+            "& Calhoun, V. D. (2007). Estimating the number of independent components "
+            "for functional magnetic resonance imaging data. Human Brain Mapping, 28(11), "
+            "1251–1266. https://doi.org/10.1002/hbm.20359"
+        )
+
+        img = check_niimg_4d(img)
+        mask = check_niimg_3d(mask)
+        data = img.get_fdata()
+        mask = mask.get_fdata()
+
+        [n_x, n_y, n_z, n_timepoints] = data.shape
+        data_nib_V = np.reshape(data, (n_x * n_y * n_z, n_timepoints), order="F")
+        mask_vec = np.reshape(mask, n_x * n_y * n_z, order="F")
+        X = data_nib_V[mask_vec == 1, :]
+
+        n_samples = np.sum(mask_vec)
 
         self.scaler_ = StandardScaler(with_mean=True, with_std=True)
         if self.normalize:
@@ -244,57 +262,65 @@ class MovingAveragePCA:
         self.n_features_ = ppca.n_features_
         self.n_samples_ = ppca.n_samples_
         self.noise_variance_ = ppca.noise_variance_
-        self.u = np.dot(np.dot(X, self.components_.T), np.diag(1.0 / self.explained_variance_))
+        component_maps = np.dot(
+            np.dot(X, self.components_.T), np.diag(1.0 / self.explained_variance_)
+        )
+        component_maps_3d = np.zeros((n_x * n_y * n_z, n_components))
+        component_maps_3d[mask_vec == 1, :] = component_maps
+        component_maps_3d = np.reshape(component_maps_3d, (n_x, n_y, n_z, n_components), order="F")
+        self.u_ = component_maps
+        self.u_nii_ = nib.Nifti1Image(component_maps_3d, img.affine, img.header)
 
-    def fit(self, X, shape_3d, mask_vec):
+    def fit(self, img, mask):
         """Fit the model with X.
 
         Parameters
         ----------
-        X : array-like, shape (n_samples, n_features)
-            Training data, where n_samples is the number of samples and
-            n_features is the number of features.
+        img : 4D niimg_like
+            Data on which to apply PCA.
+        mask : 3D niimg_like
+            Mask to apply on ``img``.
 
         Returns
         -------
         self : object
             Returns the instance itself.
         """
-        self._fit(X, shape_3d, mask_vec)
+        self._fit(img, mask)
         return self
 
-    def fit_transform(self, X, shape_3d, mask_vec):
+    def fit_transform(self, img, mask):
         """Fit the model with X and apply the dimensionality reduction on X.
 
         Parameters
         ----------
-        X : array-like, shape (n_samples, n_features)
-            Training data, where n_samples is the number of samples and
-            n_features is the number of features.
+        img : 4D niimg_like
+            Data on which to apply PCA.
+        mask : 3D niimg_like
+            Mask to apply on ``img``.
 
         Returns
         -------
-        X_new : array-like, shape (n_samples, n_components)
-            Transformed values.
+        X_new : 4D niimg_like
+            Component weight maps.
 
         Notes
         -----
         The transformation step is different from scikit-learn's approach,
         which ignores explained variance.
         """
-        self._fit(X, shape_3d, mask_vec)
-        return self.transform(X)
+        self._fit(img, mask)
+        return self.transform(img)
 
-    def transform(self, X):
+    def transform(self, img):
         """Apply dimensionality reduction to X.
 
         X is projected on the first principal components previously extracted from a training set.
 
         Parameters
         ----------
-        X : array-like, shape (n_samples, n_features)
-            New data, where n_samples is the number of samples and n_features
-            is the number of features.
+        img : 4D niimg_like
+            Data on which to apply PCA.
 
         Returns
         -------
@@ -306,34 +332,52 @@ class MovingAveragePCA:
         """
         # X = self.scaler_.fit_transform(X.T).T
         # X_new = np.dot(np.dot(X, self.components_.T), np.diag(1.0 / self.explained_variance_))
-        return self.u
+        return self.u_nii_
 
-    def inverse_transform(self, X):
+    def inverse_transform(self, img, mask):
         """Transform data back to its original space.
 
         In other words, return an input X_original whose transform would be X.
 
         Parameters
         ----------
-        X : array-like, shape (n_samples, n_components)
-            New data, where n_samples is the number of samples and n_components
-            is the number of components.
+        img : 4D niimg_like
+            Component weight maps.
+        mask : 3D niimg_like
+            Mask to apply on ``img``.
 
         Returns
         -------
-        X_original : array-like, shape (n_samples, n_features)
+        img_orig : 4D niimg_like
+            Reconstructed original data, with fourth axis corresponding to time.
 
         Notes
         -----
         This is different from scikit-learn's approach, which ignores explained variance.
         """
+        img = check_niimg_4d(img)
+        mask = check_niimg_3d(mask)
+        data = img.get_fdata()
+        mask = mask.get_fdata()
+
+        [n_x, n_y, n_z, n_components] = data.shape
+        data_nib_V = np.reshape(data, (n_x * n_y * n_z, n_components), order="F")
+        mask_vec = np.reshape(mask, n_x * n_y * n_z, order="F")
+        X = data_nib_V[mask_vec == 1, :]
+
         X_orig = np.dot(np.dot(X, np.diag(self.explained_variance_)), self.components_)
         if self.normalize:
             X_orig = self.scaler_.inverse_transform(X_orig.T).T
-        return X_orig
+
+        n_t = X_orig.shape[1]
+        out_data = np.zeros((n_x * n_y * n_z, n_t))
+        out_data[mask_vec == 1, :] = X_orig
+        out_data = np.reshape(out_data, (n_x, n_y, n_z, n_t), order="F")
+        img_orig = nib.Nifti1Image(out_data, img.affine, img.header)
+        return img_orig
 
 
-def ma_pca(img, mask_img, criterion="mdl", normalize=False):
+def ma_pca(img, mask, criterion="mdl", normalize=False):
     """Perform moving average-based PCA on imaging data.
 
     Run Singular Value Decomposition (SVD) on input data,
@@ -345,7 +389,7 @@ def ma_pca(img, mask_img, criterion="mdl", normalize=False):
     ----------
     img : 4D niimg_like
         Data on which to apply PCA.
-    mask_img : 3D niimg_like
+    mask : 3D niimg_like
         Mask to apply on ``img``.
     criterion : {'mdl', 'aic', 'kic'}, optional
         Criterion used to select the number of components. Default is "mdl".
@@ -359,7 +403,7 @@ def ma_pca(img, mask_img, criterion="mdl", normalize=False):
     Returns
     -------
     u : array-like, shape (n_samples, n_components)
-        Component weight map for each component.
+        Component weight map for each component, after masking.
     s : array-like, shape (n_components,)
         Variance explained for each component.
     varex_norm : array-like, shape (n_components,)
@@ -367,18 +411,9 @@ def ma_pca(img, mask_img, criterion="mdl", normalize=False):
     v : array-like, shape (n_timepoints, n_components)
         Component timeseries.
     """
-    # from nilearn import masking
-
-    # data = masking.apply_mask(img, mask_img).T
-    # mask_vec = np.reshape(mask_img.get_fdata(), np.prod(mask_img.shape), order="F")
-    img = img.get_fdata()
-    mask_img = mask_img.get_fdata()
-    [Nx, Ny, Nz, Nt] = img.shape
-    data_nib_V = np.reshape(img, (Nx * Ny * Nz, Nt), order='F')
-    mask_vec = np.reshape(mask_img, Nx * Ny * Nz, order='F')
-    data = data_nib_V[mask_vec == 1, :]
     pca = MovingAveragePCA(criterion=criterion, normalize=normalize)
-    u = pca.fit_transform(data, shape_3d=img.shape[:3], mask_vec=mask_vec)
+    _ = pca.fit_transform(img, mask)
+    u = pca.u_
     s = pca.explained_variance_
     varex_norm = pca.explained_variance_ratio_
     v = pca.components_.T
