@@ -74,9 +74,9 @@ class MovingAveragePCA:
 
     References
     ----------
-    Li, Y. O., Adali, T., & Calhoun, V. D. (2007). Estimating the number of
-    independent components for functional magnetic resonance imaging data.
-    Human Brain Mapping, 28(11), 1251–1266. https://doi.org/10.1002/hbm.20359
+    * Li, Y. O., Adali, T., & Calhoun, V. D. (2007). Estimating the number of
+      independent components for functional magnetic resonance imaging data.
+      Human Brain Mapping, 28(11), 1251–1266. https://doi.org/10.1002/hbm.20359
 
     Translated from the MATLAB code available in GIFT. https://trendscenter.org/software/gift/
     """
