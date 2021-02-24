@@ -172,9 +172,8 @@ class MovingAveragePCA:
                 dat[:, i_vol] = dat0[mask_s_1d == 1]
 
             # Perform Variance Normalization
-            # scaler = StandardScaler(with_mean=True, with_std=True)
-            dat = self.scaler_.fit_transform(dat.T).T
-            # data = ((dat.T - dat.T.mean(axis=0)) / dat.T.std(axis=0)).T
+            temp_scaler = StandardScaler(with_mean=True, with_std=True)
+            dat = temp_scaler.fit_transform(dat.T).T
 
             # (completed)
             LGR.info("Performing SVD on subsampled i.i.d. data...")
