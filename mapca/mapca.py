@@ -2,7 +2,6 @@
 """
 import logging
 
-import nibabel as nib
 import numpy as np
 from nilearn import image, masking
 from nilearn._utils import check_niimg_3d, check_niimg_4d
@@ -159,6 +158,7 @@ class MovingAveragePCA:
         sub_iid_sp = np.zeros((sub_depth,))
         for i in range(sub_depth):
             x_single = image.index_img(dataN_img, idx[i])
+            x_single = x_single.get_fdata()
             sub_iid_sp[i] = utils._est_indp_sp(x_single)[0] + 1
             if i > 6:
                 tmp_sub_sp = sub_iid_sp[0:i]
