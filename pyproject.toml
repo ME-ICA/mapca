@@ -19,8 +19,8 @@ exclude = '''
   )/
   | get_version.py
   | versioneer.py
-  | nimare/info.py
-  | nimare/_version.py
-  | nimare/due.py
+  | mapca/info.py
+  | mapca/_version.py
+  | mapca/due.py
 )
 '''
