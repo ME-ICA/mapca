@@ -1,6 +1,9 @@
 # mapca
 A Python implementation of the moving average principal components analysis methods from GIFT
 
+[![Latest Version](https://img.shields.io/pypi/v/mapca.svg)](https://pypi.python.org/pypi/mapca/)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/mapca.svg)](https://pypi.python.org/pypi/mapca/)
+[![License](https://img.shields.io/badge/license-GPL--2.0-blue.svg)](https://opensource.org/licenses/GPL-2.0)
 [![CircleCI](https://circleci.com/gh/ME-ICA/mapca.svg?style=shield)](https://circleci.com/gh/ME-ICA/mapca)
 [![Codecov](https://codecov.io/gh/ME-ICA/mapca/branch/main/graph/badge.svg?token=GEKDT6R0B7)](https://codecov.io/gh/ME-ICA/mapca)
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/ME-ICA/mapca.svg)](http://isitmaintained.com/project/ME-ICA/mapca "Average time to resolve an issue")
