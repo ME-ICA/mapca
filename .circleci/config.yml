@@ -6,7 +6,6 @@ version: 2.1
 orbs:
   codecov: codecov/codecov@1.0.5
 jobs:
-
   makeenv_37:
     docker:
       - image: continuumio/miniconda3
@@ -26,7 +25,7 @@ jobs:
       - save_cache:
           key: conda-py37-v1-{{ checksum "mapca/info.py" }}-{{ checksum "setup.py" }}
           paths:
-              - /opt/conda/envs/mapca_py37
+            - /opt/conda/envs/mapca_py37
 
   unittest_35:
     docker:
@@ -39,6 +38,7 @@ jobs:
       - run:
           name: Generate environment
           command: |
+            apt-get update
             apt-get install -yqq make
             if [ ! -d /opt/conda/envs/mapca_py35 ]; then
               conda create -yq -n mapca_py35 python=3.5
@@ -55,11 +55,11 @@ jobs:
       - save_cache:
           key: conda-py35-v1-{{ checksum "mapca/info.py" }}-{{ checksum "setup.py" }}
           paths:
-              - /opt/conda/envs/mapca_py35
+            - /opt/conda/envs/mapca_py35
       - persist_to_workspace:
           root: /tmp
           paths:
-              - src/coverage/.coverage.py35
+            - src/coverage/.coverage.py35
 
   unittest_36:
     docker:
@@ -72,6 +72,7 @@ jobs:
       - run:
           name: Generate environment
           command: |
+            apt-get update
             apt-get install -yqq make
             if [ ! -d /opt/conda/envs/mapca_py36 ]; then
               conda create -yq -n mapca_py36 python=3.6
@@ -88,11 +89,11 @@ jobs:
       - save_cache:
           key: conda-py36-v1-{{ checksum "mapca/info.py" }}-{{ checksum "setup.py" }}
           paths:
-              - /opt/conda/envs/mapca_py36
+            - /opt/conda/envs/mapca_py36
       - persist_to_workspace:
           root: /tmp
           paths:
-              - src/coverage/.coverage.py36
+            - src/coverage/.coverage.py36
 
   unittest_37:
     docker:
@@ -105,6 +106,7 @@ jobs:
       - run:
           name: Running unit tests
           command: |
+            apt-get update
             apt-get install -y make
             source activate mapca_py37  # depends on makeenv_37
             py.test --ignore mapca/tests/test_integration.py --cov-append --cov-report term-missing --cov=mapca mapca/
@@ -113,7 +115,7 @@ jobs:
       - persist_to_workspace:
           root: /tmp
           paths:
-              - src/coverage/.coverage.py37
+            - src/coverage/.coverage.py37
 
   integrationtest_37:
     docker:
@@ -126,6 +128,7 @@ jobs:
       - run:
           name: Running unit tests
           command: |
+            apt-get update
             apt-get install -y make
             source activate mapca_py37  # depends on makeenv_37
             py.test --log-cli-level=INFO --cov-append --cov-report term-missing --cov=mapca -k test_integration mapca/tests/test_integration.py
@@ -134,7 +137,7 @@ jobs:
       - persist_to_workspace:
           root: /tmp
           paths:
-              - src/coverage/.coverage.py37
+            - src/coverage/.coverage.py37
 
   style_check:
     docker:
@@ -164,6 +167,7 @@ jobs:
       - run:
           name: Merge coverage files
           command: |
+            apt-get update
             apt-get install -yqq curl
             source activate mapca_py37  # depends on makeenv37
             cd /tmp/src/coverage/
