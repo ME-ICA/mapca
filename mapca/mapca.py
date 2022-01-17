@@ -96,7 +96,7 @@ class MovingAveragePCA:
         eigenvalues of the covariance matrix of X.
     aic : :obj:`numpy.ndarray`, shape (n_components)
         The Akaike Information Criterion optimization curve.
-    kic: array, shape (n_components)
+    kic : :obj:`numpy.ndarray`, shape (n_components)
         The Kullback-Leibler Information Criterion optimization curve.
     mdl: array, shape (n_components)
         The Minimum Description Length optimization curve.
