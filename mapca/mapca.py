@@ -234,19 +234,19 @@ class MovingAveragePCA:
 
         LGR.info("Estimating the dimensionality ...")
         p = n_timepoints
-        aic = np.zeros(p - 1)
-        kic = np.zeros(p - 1)
-        mdl = np.zeros(p - 1)
+        self.aic = np.zeros(p - 1)
+        self.kic = np.zeros(p - 1)
+        self.mdl = np.zeros(p - 1)
 
         for k_idx, k in enumerate(np.arange(1, p)):
             LH = np.log(np.prod(np.power(eigenvalues[k:], 1 / (p - k))) / np.mean(eigenvalues[k:]))
             mlh = 0.5 * N * (p - k) * LH
             df = 1 + 0.5 * k * (2 * p - k + 1)
-            aic[k_idx] = (-2 * mlh) + (2 * df)
-            kic[k_idx] = (-2 * mlh) + (3 * df)
-            mdl[k_idx] = -mlh + (0.5 * df * np.log(N))
+            self.aic[k_idx] = (-2 * mlh) + (2 * df)
+            self.kic[k_idx] = (-2 * mlh) + (3 * df)
+            self.mdl[k_idx] = -mlh + (0.5 * df * np.log(N))
 
-        itc = np.row_stack([aic, kic, mdl])
+        itc = np.row_stack([self.aic, self.kic, self.mdl])
 
         if self.criterion == "aic":
             criteria_idx = 0
