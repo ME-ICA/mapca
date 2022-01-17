@@ -94,7 +94,7 @@ class MovingAveragePCA:
 
         Equal to the average of (min(n_features, n_samples) - n_components) smallest
         eigenvalues of the covariance matrix of X.
-    aic: array, shape (n_components)
+    aic : :obj:`numpy.ndarray`, shape (n_components)
         The Akaike Information Criterion optimization curve.
     kic: array, shape (n_components)
         The Kullback-Leibler Information Criterion optimization curve.
