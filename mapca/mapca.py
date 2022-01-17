@@ -51,27 +51,27 @@ class MovingAveragePCA:
 
     Attributes
     ----------
-    components_ : array, shape (n_components, n_features)
+    components_ : :obj:`numpy.ndarray`, shape (n_components, n_features)
         Principal axes in feature space, representing the directions of maximum
         variance in the data. The components are sorted by explained_variance_.
-    u_ : array, shape (n_components, n_mask)
+    u_ : :obj:`numpy.ndarray`, shape (n_components, n_mask)
         Component weight maps, limited to voxels in the mask.
     u_nii_ : 4D nibabel.nifti1.Nifti1Image
         Component weight maps, stored as a 4D niimg.
-    explained_variance_ : array, shape (n_components,)
+    explained_variance_ : :obj:`numpy.ndarray`, shape (n_components,)
         The amount of variance explained by each of the selected components.
 
         Equal to n_components largest eigenvalues of the covariance matrix of X.
-    explained_variance_ratio_ : array, shape (n_components,)
+    explained_variance_ratio_ : :obj:`numpy.ndarray`, shape (n_components,)
         Percentage of variance explained by each of the selected components.
 
         If n_components is not set then all components are stored and the sum of the
         ratios is equal to 1.0.
-    singular_values_ : array, shape (n_components,)
+    singular_values_ : :obj:`numpy.ndarray`, shape (n_components,)
         The singular values corresponding to each of the selected components.
         The singular values are equal to the 2-norms of the n_components
         variables in the lower-dimensional space.
-    mean_ : array, shape (n_features,)
+    mean_ : :obj:`numpy.ndarray`, shape (n_features,)
         Per-feature empirical mean, estimated from the training set.
 
         Equal to X.mean(axis=0).
@@ -94,11 +94,11 @@ class MovingAveragePCA:
 
         Equal to the average of (min(n_features, n_samples) - n_components) smallest
         eigenvalues of the covariance matrix of X.
-    aic : :obj:`numpy.ndarray`, shape (n_components)
+    aic_ : :obj:`numpy.ndarray`, shape (n_components)
         The Akaike Information Criterion optimization curve.
-    kic : :obj:`numpy.ndarray`, shape (n_components)
+    kic_ : :obj:`numpy.ndarray`, shape (n_components)
         The Kullback-Leibler Information Criterion optimization curve.
-    mdl : :obj:`numpy.ndarray`, shape (n_components)
+    mdl_ : :obj:`numpy.ndarray`, shape (n_components)
         The Minimum Description Length optimization curve.
 
     References
@@ -240,19 +240,19 @@ class MovingAveragePCA:
 
         LGR.info("Estimating the dimensionality ...")
         p = n_timepoints
-        self.aic = np.zeros(p - 1)
-        self.kic = np.zeros(p - 1)
-        self.mdl = np.zeros(p - 1)
+        self.aic_ = np.zeros(p - 1)
+        self.kic_ = np.zeros(p - 1)
+        self.mdl_ = np.zeros(p - 1)
 
         for k_idx, k in enumerate(np.arange(1, p)):
             LH = np.log(np.prod(np.power(eigenvalues[k:], 1 / (p - k))) / np.mean(eigenvalues[k:]))
             mlh = 0.5 * N * (p - k) * LH
             df = 1 + 0.5 * k * (2 * p - k + 1)
-            self.aic[k_idx] = (-2 * mlh) + (2 * df)
-            self.kic[k_idx] = (-2 * mlh) + (3 * df)
-            self.mdl[k_idx] = -mlh + (0.5 * df * np.log(N))
+            self.aic_[k_idx] = (-2 * mlh) + (2 * df)
+            self.kic_[k_idx] = (-2 * mlh) + (3 * df)
+            self.mdl_[k_idx] = -mlh + (0.5 * df * np.log(N))
 
-        itc = np.row_stack([self.aic, self.kic, self.mdl])
+        itc = np.row_stack([self.aic_, self.kic_, self.mdl_])
 
         if self.criterion == "aic":
             criteria_idx = 0
