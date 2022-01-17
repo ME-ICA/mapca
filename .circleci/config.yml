@@ -150,6 +150,7 @@ jobs:
       - run:
           name: Style check
           command: |
+            apt-get update
             apt-get install -yqq make
             source activate mapca_py37  # depends on makeenv37
             flake8 mapca
