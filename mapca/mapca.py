@@ -94,6 +94,12 @@ class MovingAveragePCA:
 
         Equal to the average of (min(n_features, n_samples) - n_components) smallest
         eigenvalues of the covariance matrix of X.
+    aic: array, shape (n_components)
+        The Akaike Information Criterion optimization curve.
+    kic: array, shape (n_components)
+        The Kullback-Leibler Information Criterion optimization curve.
+    mdl: array, shape (n_components)
+        The Minimum Description Length optimization curve.
 
     References
     ----------
