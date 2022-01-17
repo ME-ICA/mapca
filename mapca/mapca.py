@@ -98,7 +98,7 @@ class MovingAveragePCA:
         The Akaike Information Criterion optimization curve.
     kic : :obj:`numpy.ndarray`, shape (n_components)
         The Kullback-Leibler Information Criterion optimization curve.
-    mdl: array, shape (n_components)
+    mdl : :obj:`numpy.ndarray`, shape (n_components)
         The Minimum Description Length optimization curve.
 
     References
