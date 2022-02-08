@@ -254,19 +254,35 @@ class MovingAveragePCA:
 
         itc = np.row_stack([self.aic_, self.kic_, self.mdl_])
 
-        if self.criterion == "aic":
-            criteria_idx = 0
-        elif self.criterion == "kic":
-            criteria_idx = 1
-        elif self.criterion == "mdl":
-            criteria_idx = 2
+        dlap = np.diff(itc, axis=1)
 
-        dlap = np.diff(itc[criteria_idx, :])
-        a = np.where(dlap > 0)[0] + 1  # Plus 1 to
-        if a.size == 0:
-            n_components = itc[criteria_idx, :].shape[0]
+        # AIC
+        a_aic = np.where(dlap[0, :] > 0)[0] + 1
+        if a_aic.size == 0:
+            self.n_aic = itc[0, :].shape[0]
         else:
-            n_components = a[0]
+            self.n_aic = a_aic[0]
+
+        # KIC
+        a_kic = np.where(dlap[1, :] > 0)[0] + 1
+        if a_kic.size == 0:
+            self.n_kic = itc[1, :].shape[0]
+        else:
+            self.n_kic = a_kic[0]
+
+        # MDL
+        a_mdl = np.where(dlap[2, :] > 0)[0] + 1
+        if a_mdl.size == 0:
+            self.n_mdl = itc[2, :].shape[0]
+        else:
+            self.n_mdl = a_mdl[0]
+
+        if self.criterion == "aic":
+            n_components = self.n_aic
+        elif self.criterion == "kic":
+            n_components = self.n_kic
+        elif self.criterion == "mdl":
+            n_components = self.n_mdl
 
         LGR.info("Estimated number of components is %d" % n_components)
 
