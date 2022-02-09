@@ -259,30 +259,30 @@ class MovingAveragePCA:
         # AIC
         a_aic = np.where(dlap[0, :] > 0)[0] + 1
         if a_aic.size == 0:
-            self.n_aic = itc[0, :].shape[0]
+            self.n_aic_ = itc[0, :].shape[0]
         else:
-            self.n_aic = a_aic[0]
+            self.n_aic_ = a_aic[0]
 
         # KIC
         a_kic = np.where(dlap[1, :] > 0)[0] + 1
         if a_kic.size == 0:
-            self.n_kic = itc[1, :].shape[0]
+            self.n_kic_ = itc[1, :].shape[0]
         else:
-            self.n_kic = a_kic[0]
+            self.n_kic_ = a_kic[0]
 
         # MDL
         a_mdl = np.where(dlap[2, :] > 0)[0] + 1
         if a_mdl.size == 0:
-            self.n_mdl = itc[2, :].shape[0]
+            self.n_mdl_ = itc[2, :].shape[0]
         else:
-            self.n_mdl = a_mdl[0]
+            self.n_mdl_ = a_mdl[0]
 
         if self.criterion == "aic":
-            n_components = self.n_aic
+            n_components = self.n_aic_
         elif self.criterion == "kic":
-            n_components = self.n_kic
+            n_components = self.n_kic_
         elif self.criterion == "mdl":
-            n_components = self.n_mdl
+            n_components = self.n_mdl_
 
         LGR.info("Estimated number of components is %d" % n_components)
 
