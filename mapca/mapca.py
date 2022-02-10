@@ -84,22 +84,32 @@ class MovingAveragePCA:
     n_features_ : int
         Number of features in the training data.
     n_samples_ : int
-        Number of samples in the training data.
-    noise_variance_ : float
-        The estimated noise covariance following the Probabilistic PCA model
-        from Tipping and Bishop 1999.
-        See “Pattern Recognition and Machine Learning” by C. Bishop, 12.2.1 p. 574
-        or http://www.miketipping.com/papers/met-mppca.pdf.
-        It is required to compute the estimated data covariance and score samples.
-
-        Equal to the average of (min(n_features, n_samples) - n_components) smallest
-        eigenvalues of the covariance matrix of X.
-    aic_ : :obj:`numpy.ndarray`, shape (n_components)
-        The Akaike Information Criterion optimization curve.
-    kic_ : :obj:`numpy.ndarray`, shape (n_components)
-        The Kullback-Leibler Information Criterion optimization curve.
-    mdl_ : :obj:`numpy.ndarray`, shape (n_components)
-        The Minimum Description Length optimization curve.
+        Number of samples in the training data
+    aic_ : dict
+        Dictionary containing the Akaike Information Criterion results:
+            - 'n_components': The number of components chosen by the AIC criterion.
+            - 'value': The AIC curve values.
+            - 'explained_variance_total': The total explained variance of the components.
+    kic_ : dict
+        Dictionary containing the Kullback-Leibler Information Criterion results:
+            - 'n_components': The number of components chosen by the KIC criterion.
+            - 'value': The KIC curve values.
+            - 'explained_variance_total': The total explained variance of the components.
+    mdl_ : dict
+        Dictionary containing the Minimum Description Length results:
+            - 'n_components': The number of components chosen by the MDL criterion.
+            - 'value': The MDL curve values.
+            - 'explained_variance_total': The total explained variance of the components.
+    varexp_90 : dict
+        Dictionary containing the 90% variance explained results:
+            - 'n_components': The number of components chosen by the 90% variance explained
+                              criterion.
+            - 'explained_variance_total': The total explained variance of the components.
+    varexp_95 : dict
+        Dictionary containing the 95% variance explained results:
+            - 'n_components': The number of components chosen by the 95% variance explained
+                              criterion.
+            - 'explained_variance_total': The total explained variance of the components.
 
     References
     ----------
@@ -240,66 +250,104 @@ class MovingAveragePCA:
 
         LGR.info("Estimating the dimensionality ...")
         p = n_timepoints
-        self.aic_ = np.zeros(p - 1)
-        self.kic_ = np.zeros(p - 1)
-        self.mdl_ = np.zeros(p - 1)
+        aic = np.zeros(p - 1)
+        kic = np.zeros(p - 1)
+        mdl = np.zeros(p - 1)
 
         for k_idx, k in enumerate(np.arange(1, p)):
             LH = np.log(np.prod(np.power(eigenvalues[k:], 1 / (p - k))) / np.mean(eigenvalues[k:]))
             mlh = 0.5 * N * (p - k) * LH
             df = 1 + 0.5 * k * (2 * p - k + 1)
-            self.aic_[k_idx] = (-2 * mlh) + (2 * df)
-            self.kic_[k_idx] = (-2 * mlh) + (3 * df)
-            self.mdl_[k_idx] = -mlh + (0.5 * df * np.log(N))
+            aic[k_idx] = (-2 * mlh) + (2 * df)
+            kic[k_idx] = (-2 * mlh) + (3 * df)
+            mdl[k_idx] = -mlh + (0.5 * df * np.log(N))
 
-        itc = np.row_stack([self.aic_, self.kic_, self.mdl_])
+        itc = np.row_stack([aic, kic, mdl])
 
         dlap = np.diff(itc, axis=1)
 
+        # Calculate optimal number of components with each criterion
         # AIC
         a_aic = np.where(dlap[0, :] > 0)[0] + 1
         if a_aic.size == 0:
-            self.n_aic_ = itc[0, :].shape[0]
+            n_aic = itc[0, :].shape[0]
         else:
-            self.n_aic_ = a_aic[0]
+            n_aic = a_aic[0]
 
         # KIC
         a_kic = np.where(dlap[1, :] > 0)[0] + 1
         if a_kic.size == 0:
-            self.n_kic_ = itc[1, :].shape[0]
+            n_kic = itc[1, :].shape[0]
         else:
-            self.n_kic_ = a_kic[0]
+            n_kic = a_kic[0]
 
         # MDL
         a_mdl = np.where(dlap[2, :] > 0)[0] + 1
         if a_mdl.size == 0:
-            self.n_mdl_ = itc[2, :].shape[0]
+            n_mdl = itc[2, :].shape[0]
         else:
-            self.n_mdl_ = a_mdl[0]
+            n_mdl = a_mdl[0]
 
         if self.criterion == "aic":
-            n_components = self.n_aic_
+            n_components = n_aic
         elif self.criterion == "kic":
-            n_components = self.n_kic_
+            n_components = n_kic
         elif self.criterion == "mdl":
-            n_components = self.n_mdl_
+            n_components = n_mdl
+
+        LGR.info("Performing PCA")
+
+        # PCA with all possible components (the estimated selection is made after)
+        ppca = PCA(n_components=None, svd_solver="full", copy=False, whiten=False)
+        ppca.fit(X)
+
+        # Get cumulative explained variance as components are added
+        cumsum_varexp = np.cumsum(ppca.explained_variance_ratio_)
+
+        # Calculate number of components for 90% varexp
+        n_comp_varexp_90 = np.where(cumsum_varexp >= 0.9)[0][0] + 1
+
+        # Calculate number of components for 95% varexp
+        n_comp_varexp_95 = np.where(cumsum_varexp >= 0.95)[0][0] + 1
 
         LGR.info("Estimated number of components is %d" % n_components)
 
-        # PCA with estimated number of components
-        ppca = PCA(n_components=n_components, svd_solver="full", copy=False, whiten=False)
-        ppca.fit(X)
+        # Save results of each criterion into dictionaries
+        self.aic_ = {
+            "n_components": n_aic,
+            "value": aic,
+            "explained_variance_total": cumsum_varexp[n_aic - 1],
+        }
+        self.kic_ = {
+            "n_components": n_kic,
+            "value": kic,
+            "explained_variance_total": cumsum_varexp[n_kic - 1],
+        }
+        self.mdl_ = {
+            "n_components": n_mdl,
+            "value": mdl,
+            "explained_variance_total": cumsum_varexp[n_mdl - 1],
+        }
+        self.varexp_90_ = {
+            "n_components": n_comp_varexp_90,
+            "explained_variance_total": cumsum_varexp[n_comp_varexp_90 - 1],
+        }
+        self.varexp_95_ = {
+            "n_components": n_comp_varexp_95,
+            "explained_variance_total": cumsum_varexp[n_comp_varexp_95 - 1],
+        }
 
         # Assign attributes from model
-        self.components_ = ppca.components_
-        self.explained_variance_ = ppca.explained_variance_
-        self.explained_variance_ratio_ = ppca.explained_variance_ratio_
-        self.singular_values_ = ppca.singular_values_
+        self.components_ = ppca.components_[:n_components, :]
+        self.explained_variance_ = ppca.explained_variance_[:n_components]
+        self.explained_variance_ratio_ = ppca.explained_variance_ratio_[:n_components]
+        self.singular_values_ = ppca.singular_values_[:n_components]
         self.mean_ = ppca.mean_
-        self.n_components_ = ppca.n_components_
+        self.n_components_ = n_components
         self.n_features_ = ppca.n_features_
         self.n_samples_ = ppca.n_samples_
-        self.noise_variance_ = ppca.noise_variance_
+        # Commenting out noise variance as it depends on the covariance of the estimation
+        # self.noise_variance_ = ppca.noise_variance_
         component_maps = np.dot(
             np.dot(X, self.components_.T), np.diag(1.0 / self.explained_variance_)
         )
