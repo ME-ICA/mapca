@@ -102,11 +102,13 @@ class MovingAveragePCA:
             - 'explained_variance_total': The total explained variance of the components.
     varexp_90 : dict
         Dictionary containing the 90% variance explained results:
-            - 'n_components': The number of components chosen by the 90% variance explained criterion.
+            - 'n_components': The number of components chosen by the 90% variance explained
+                              criterion.
             - 'explained_variance_total': The total explained variance of the components.
     varexp_95 : dict
         Dictionary containing the 95% variance explained results:
-            - 'n_components': The number of components chosen by the 95% variance explained criterion.
+            - 'n_components': The number of components chosen by the 95% variance explained
+                              criterion.
             - 'explained_variance_total': The total explained variance of the components.
 
     References
