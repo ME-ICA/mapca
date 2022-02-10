@@ -84,22 +84,30 @@ class MovingAveragePCA:
     n_features_ : int
         Number of features in the training data.
     n_samples_ : int
-        Number of samples in the training data.
-    noise_variance_ : float
-        The estimated noise covariance following the Probabilistic PCA model
-        from Tipping and Bishop 1999.
-        See “Pattern Recognition and Machine Learning” by C. Bishop, 12.2.1 p. 574
-        or http://www.miketipping.com/papers/met-mppca.pdf.
-        It is required to compute the estimated data covariance and score samples.
-
-        Equal to the average of (min(n_features, n_samples) - n_components) smallest
-        eigenvalues of the covariance matrix of X.
-    aic_ : :obj:`numpy.ndarray`, shape (n_components)
-        The Akaike Information Criterion optimization curve.
-    kic_ : :obj:`numpy.ndarray`, shape (n_components)
-        The Kullback-Leibler Information Criterion optimization curve.
-    mdl_ : :obj:`numpy.ndarray`, shape (n_components)
-        The Minimum Description Length optimization curve.
+        Number of samples in the training data
+    aic_ : dict
+        Dictionary containing the Akaike Information Criterion results:
+            - 'n_components': The number of components chosen by the AIC criterion.
+            - 'value': The AIC curve values.
+            - 'explained_variance_total': The total explained variance of the components.
+    kic_ : dict
+        Dictionary containing the Kullback-Leibler Information Criterion results:
+            - 'n_components': The number of components chosen by the KIC criterion.
+            - 'value': The KIC curve values.
+            - 'explained_variance_total': The total explained variance of the components.
+    mdl_ : dict
+        Dictionary containing the Minimum Description Length results:
+            - 'n_components': The number of components chosen by the MDL criterion.
+            - 'value': The MDL curve values.
+            - 'explained_variance_total': The total explained variance of the components.
+    varexp_90 : dict
+        Dictionary containing the 90% variance explained results:
+            - 'n_components': The number of components chosen by the 90% variance explained criterion.
+            - 'explained_variance_total': The total explained variance of the components.
+    varexp_95 : dict
+        Dictionary containing the 95% variance explained results:
+            - 'n_components': The number of components chosen by the 95% variance explained criterion.
+            - 'explained_variance_total': The total explained variance of the components.
 
     References
     ----------
