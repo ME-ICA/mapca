@@ -100,15 +100,19 @@ class MovingAveragePCA:
             - 'n_components': The number of components chosen by the MDL criterion.
             - 'value': The MDL curve values.
             - 'explained_variance_total': The total explained variance of the components.
-    varexp_90 : dict
+    varexp_90_ : dict
         Dictionary containing the 90% variance explained results:
             - 'n_components': The number of components chosen by the 90% variance explained
                               criterion.
             - 'explained_variance_total': The total explained variance of the components.
-    varexp_95 : dict
+    varexp_95_ : dict
         Dictionary containing the 95% variance explained results:
             - 'n_components': The number of components chosen by the 95% variance explained
                               criterion.
+            - 'explained_variance_total': The total explained variance of the components.
+    all_ : dict
+        Dictionary containing the results for all possible components:
+            - 'n_components': Total number of possible components.
             - 'explained_variance_total': The total explained variance of the components.
 
     References
@@ -335,6 +339,10 @@ class MovingAveragePCA:
         self.varexp_95_ = {
             "n_components": n_comp_varexp_95,
             "explained_variance_total": cumsum_varexp[n_comp_varexp_95 - 1],
+        }
+        self.all_ = {
+            "n_components": ppca.n_components_,
+            "explained_variance_total": cumsum_varexp,
         }
 
         # Assign attributes from model
