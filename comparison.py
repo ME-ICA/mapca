@@ -1,66 +1,126 @@
-import pandas as pd
-import os
 import json
-#import subprocess
+import os
+import subprocess
 
-repoid="ds000258"
-#repourl="git@github.com:OpenNeuroDatasets/"
-#wdir="/bcbl/home/home_g-m/llecca/Scripts/gift/dev"
-wdir=os.getcwd()
+import nibabel as nib
+import numpy as np
+import pandas as pd
+from scipy import io as scipy_io
+from tedana.workflows import tedana as tedana_cli
 
-#subprocess.run(["cd",wdir])
-#os.system(["cd", wdir])
+from mapca import MovingAveragePCA
 
-os.system("datalad install git@github.com:OpenNeuroDatasets/"+repoid+".git")
-repo=os.path.join(wdir,repoid)
+repoid = "ds000258"
+wdir = "/Users/eurunuela/Downloads"
 
-subjects=[]
+repo = os.path.join(wdir, repoid)
 
-for file in os.listdir(repo):
-    d = os.path.join(repo,file)
-    if os.path.isdir(d) and "sub-" in d:
-        subjects.append(os.path.basename(d))
+subprocess.run(
+    f"cd {wdir} && datalad install git@github.com:OpenNeuroDatasets/{repoid}.git", shell=True
+)
 
-json_files=[]
-echo_times=[]
+subjects = []
 
-for sbj in subjects:
-    for file in os.listdir(os.path.join(repo,sbj,'func')):
-        if file.endswith('.json'):
-           f=open(os.path.join(repo,sbj,'func',file))
-           data=json.load(f)
-           echo_times.append(data["EchoTime"])
-           json_files.append(file)
-           f.close()
-
-#df_echo=pd.DataFrame(list(zip(json_files,echo_times)),columns=['file','echo time'])
-
-df_echo = pd.DataFrame({'file': json_files, 'echo time': echo_times})
-
-#write.csv(df_echo,os.path.join(wdir,'echo_times_'+repoid+'.csv'),row.names=FALSE)
-df_echo.to_csv(os.path.join(wdir,'echo_times_'+repoid+'.csv'),index=False)
+# Create pandas dataframe to store results with the following columns:
+# Subject, maPCA_AIC, GIFT_AIC, maPCA_KIC, GIFT_KIC, maPCA_MDL, GIFT_MDL
+results_df = pd.DataFrame(
+    columns=["Subject", "maPCA_AIC", "GIFT_AIC", "maPCA_KIC", "GIFT_KIC", "maPCA_MDL", "GIFT_MDL"]
+)
 
 
-# here run matlab script
+for sbj in os.listdir(repo):
+    sbj_dir = os.path.join(repo, sbj)
 
+    # Access subject directory
+    if os.path.isdir(sbj_dir) and "sub-" in sbj_dir:
+        echo_times = []
+        func_files = []
 
+        subjects.append(os.path.basename(sbj_dir))
 
+        print("Downloading subject", sbj)
 
+        subprocess.run(f"datalad get {sbj}/func", shell=True, cwd=repo)
 
+        print("Searching for functional files and echo times")
 
+        # Get functional filenames and echo times
+        for func_file in os.listdir(os.path.join(repo, sbj, "func")):
+            if func_file.endswith(".json"):
+                with open(os.path.join(repo, sbj, "func", func_file)) as f:
+                    data = json.load(f)
+                    echo_times.append(data["EchoTime"])
+            elif func_file.endswith(".nii.gz"):
+                func_files.append(os.path.join(repo, sbj, "func", func_file))
 
-#df=pd.read_csv(os.path.join(wdir,'participants.tsv'),sep='\t')
-#subjects=df['participant_id']
+        # Sort echo_times values from lowest to highest and multiply by 1000
+        echo_times = np.array(sorted(echo_times)) * 1000
 
-#for sbj in subjects:
-#    print(os.path.join(sbj,'func'))
-#    for jsonfile in os.listdir(os.path.join(wdir,sbj,'func')):
-#        if jsonfile.endswith('.json'):
-#            f=open(jsonfile)
-#            data=json.load(f)
-#            print(data['EchoTime'])
-#            f.close()
+        # Sort func_files
+        func_files = sorted(func_files)
 
+        # Tedana output directory
+        tedana_output_dir = os.path.join(sbj_dir, "tedana")
 
-    #datalad get os.path.join(sbj,'func')
-    #datalad drop os.path.join(sbj,'func')
+        print("Running tedana")
+
+        # Run tedana
+        tedana_cli.tedana_workflow(
+            data=func_files,
+            tes=echo_times,
+            out_dir=tedana_output_dir,
+            tedpca="mdl",
+        )
+
+        # Find tedana optimally combined data and mask
+        tedana_optcom = os.path.join(tedana_output_dir, "desc-optcom_bold.nii.gz")
+        tedana_mask = os.path.join(tedana_output_dir, "desc-adaptiveGoodSignal_mask.nii.gz")
+
+        # Read tedana optimally combined data and mask
+        tedana_optcom_img = nib.load(tedana_optcom)
+        tedana_mask_img = nib.load(tedana_mask)
+
+        # Save tedana optimally combined data and mask into mat files
+        tedana_optcom_mat = os.path.join(sbj_dir, "optcom_bold.mat")
+        tedana_mask_mat = os.path.join(sbj_dir, "mask.mat")
+        print("Saving tedana optimally combined data and mask into mat files")
+        scipy_io.savemat(tedana_optcom_mat, {"data": tedana_optcom_img.get_fdata()})
+        scipy_io.savemat(tedana_mask_mat, {"mask": tedana_mask_img.get_fdata()})
+
+        # Run mapca
+        print("Running mapca")
+        pca = MovingAveragePCA(normalize=True)
+        _ = pca.fit_transform(tedana_optcom_img, tedana_mask_img)
+
+        # Get AIC, KIC and MDL values
+        aic = pca.aic_
+        kic = pca.kic_
+        mdl = pca.mdl_
+
+        # Remove tedana output directory and the anat and func directories
+        subprocess.run(f"rm -rf {tedana_output_dir}", shell=True, cwd=repo)
+        subprocess.run(f"rm -rf {sbj}/anat", shell=True, cwd=repo)
+        subprocess.run(f"rm -rf {sbj}/func", shell=True, cwd=repo)
+
+        # Here run matlab script with subprocess.run
+        print("Running GIFT version of maPCA")
+
+        # Append AIC, KIC and MDL values to a pandas dataframe
+        print("Appending AIC, KIC and MDL values to a pandas dataframe")
+        results_df = results_df.append(
+            {
+                "Subject": sbj,
+                "maPCA_AIC": aic,
+                "GIFT_AIC": 0,
+                "maPCA_KIC": kic,
+                "GIFT_KIC": 0,
+                "maPCA_MDL": mdl,
+                "GIFT_MDL": 0,
+            },
+            ignore_index=True,
+        )
+
+        print("Subject", sbj, "done")
+
+# Save pandas dataframe to csv file
+results_df.to_csv(os.path.join(wdir, "results.csv"), index=False)
