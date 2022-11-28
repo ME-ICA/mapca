@@ -106,7 +106,7 @@ for sbj in os.listdir(repo):
         # Here run matlab script with subprocess.run
         print("Running GIFT version of maPCA")
  
-        cmd = f'matlab -nodesktop -nosplash -nojvm -logfile {sbj_dir}/giftoutput.txt -r "try;addpath(genpath(\'{gift}\'));sprintf(\'Subject dir: %s\',\'{datadir}\');[comp_est_AIC,comp_est_KIC,comp_est_MDL,mdl,aic,kic]=icatb_estimate_dimension(\'{tedana_optcom_mat}\',\'{tedana_mask_mat}\',\'double\',3);save(\'{sbj_dir}/gift.mat\',\'comp_est_AIC\',\'comp_est_KIC\',\'comp_est_MDL\');end;quit"'
+        cmd = f'matlab -nodesktop -nosplash -nojvm -logfile {sbj_dir}/giftoutput.txt -r "try;addpath(genpath(\'{gift}\'));[comp_est_AIC,comp_est_KIC,comp_est_MDL,mdl,aic,kic]=icatb_estimate_dimension(\'{tedana_optcom_mat}\',\'{tedana_mask_mat}\',\'double\',3);save(\'{sbj_dir}/gift.mat\',\'comp_est_AIC\',\'comp_est_KIC\',\'comp_est_MDL\');end;quit"'
         
         proc=subprocess.Popen(cmd,shell=True,stdin=subprocess.PIPE,
                               stdout=subprocess.PIPE,
