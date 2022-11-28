@@ -108,14 +108,14 @@ for sbj in os.listdir(repo):
  
         cmd = f'matlab -nodesktop -nosplash -nojvm -logfile {sbj_dir}/giftoutput.txt -r "try;addpath(genpath(\'{gift}\'));sprintf(\'Subject dir: %s\',\'{datadir}\');[comp_est_AIC,comp_est_KIC,comp_est_MDL,mdl,aic,kic]=icatb_estimate_dimension(\'{tedana_optcom_mat}\',\'{tedana_mask_mat}\',\'double\',3);save(\'{sbj_dir}/gift.mat\',\'comp_est_AIC\',\'comp_est_KIC\',\'comp_est_MDL\');end;quit"'
         
-        giftmat=scipy_io.loadmat(os.path.join(sbj_dir,'gift.mat'))
-
         proc=subprocess.Popen(cmd,shell=True,stdin=subprocess.PIPE,
                               stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE)
         output, err = proc.communicate()
         print(output.decode('utf-8'))
-
+        
+        giftmat=scipy_io.loadmat(os.path.join(sbj_dir,'gift.mat'))
+        
         # Append AIC, KIC and MDL values to a pandas dataframe
         print("Appending AIC, KIC and MDL values to a pandas dataframe")
         results_df = results_df.append(
