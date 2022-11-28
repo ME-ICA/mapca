@@ -14,6 +14,7 @@ repoid = "ds000258"
 wdir = "/Users/eurunuela/Downloads"
 
 repo = os.path.join(wdir, repoid)
+gift = "/bcbl/home/home_g-m/llecca/Scripts/gift"
 
 subprocess.run(
     f"cd {wdir} && datalad install git@github.com:OpenNeuroDatasets/{repoid}.git", shell=True
@@ -104,6 +105,16 @@ for sbj in os.listdir(repo):
 
         # Here run matlab script with subprocess.run
         print("Running GIFT version of maPCA")
+ 
+        cmd = f'matlab -nodesktop -nosplash -nojvm -logfile {sbj_dir}/giftoutput.txt -r "try;addpath(genpath(\'{gift}\'));sprintf(\'Subject dir: %s\',\'{datadir}\');[comp_est_AIC,comp_est_KIC,comp_est_MDL,mdl,aic,kic]=icatb_estimate_dimension(\'{tedana_optcom_mat}\',\'{tedana_mask_mat}\',\'double\',3);save(\'{sbj_dir}/gift.mat\',\'comp_est_AIC\',\'comp_est_KIC\',\'comp_est_MDL\');end;quit"'
+        
+        giftmat=scipy_io.loadmat(os.path.join(sbj_dir,'gift.mat'))
+
+        proc=subprocess.Popen(cmd,shell=True,stdin=subprocess.PIPE,
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE)
+        output, err = proc.communicate()
+        print(output.decode('utf-8'))
 
         # Append AIC, KIC and MDL values to a pandas dataframe
         print("Appending AIC, KIC and MDL values to a pandas dataframe")
@@ -111,11 +122,11 @@ for sbj in os.listdir(repo):
             {
                 "Subject": sbj,
                 "maPCA_AIC": aic,
-                "GIFT_AIC": 0,
+                "GIFT_AIC": giftmat['comp_est_AIC'][0][0],
                 "maPCA_KIC": kic,
-                "GIFT_KIC": 0,
+                "GIFT_KIC": giftmat['comp_est_KIC'][0][0],
                 "maPCA_MDL": mdl,
-                "GIFT_MDL": 0,
+                "GIFT_MDL": giftmat['compt_est_MDL'][0][0],
             },
             ignore_index=True,
         )
