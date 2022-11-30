@@ -81,6 +81,9 @@ for sbj in os.listdir(repo):
         tedana_optcom_img = nib.load(tedana_optcom)
         tedana_mask_img = nib.load(tedana_mask)
 
+        # Make mask binary
+        tedana_mask_img = nib.Nifti1Image(tedana_mask_img.get_fdata() > 0, tedana_mask_img.affine)
+
         # Save tedana optimally combined data and mask into mat files
         tedana_optcom_mat = os.path.join(sbj_dir, "optcom_bold.mat")
         tedana_mask_mat = os.path.join(sbj_dir, "mask.mat")
