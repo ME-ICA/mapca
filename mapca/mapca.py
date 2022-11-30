@@ -152,7 +152,7 @@ class MovingAveragePCA:
         self.scaler_ = StandardScaler(with_mean=True, with_std=True)
         if self.normalize:
             # TODO: determine if tedana is already normalizing before this
-            X = self.scaler_.fit_transform(X.T).T  # This was X_sc
+            X = self.scaler_.fit_transform(X)  # This was X_sc
             # X = ((X.T - X.T.mean(axis=0)) / X.T.std(axis=0)).T
 
         LGR.info("Performing SVD on original data...")
@@ -228,7 +228,7 @@ class MovingAveragePCA:
 
             # Perform Variance Normalization
             temp_scaler = StandardScaler(with_mean=True, with_std=True)
-            dat = temp_scaler.fit_transform(dat.T).T
+            dat = temp_scaler.fit_transform(dat)
 
             # (completed)
             LGR.info("Performing SVD on subsampled i.i.d. data...")
