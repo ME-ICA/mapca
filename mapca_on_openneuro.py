@@ -11,14 +11,17 @@ from tedana.workflows import tedana as tedana_cli
 from mapca import MovingAveragePCA
 
 repoid = "ds000258"
-wdir = "/Users/eurunuela/Downloads"
+wdir = "/bcbl/home/home_g-m/llecca/Scripts"
 
 repo = os.path.join(wdir, repoid)
 gift = "/bcbl/home/home_g-m/llecca/Scripts/gift"
 
-subprocess.run(
-    f"cd {wdir} && datalad install git@github.com:OpenNeuroDatasets/{repoid}.git", shell=True
-)
+if os.path.exists(os.path.join(wdir,repoid)):
+    print('Repo exists')
+else:
+    subprocess.run(
+        f"cd {wdir} && datalad install https://github.com/OpenNeuroDatasets/{repoid}.git", shell=True
+    )
 
 subjects = []
 
@@ -82,7 +85,9 @@ for sbj in os.listdir(repo):
         tedana_mask_img = nib.load(tedana_mask)
 
         # Make mask binary
-        tedana_mask_img = nib.Nifti1Image(tedana_mask_img.get_fdata() > 0, tedana_mask_img.affine)
+        mask_array = tedana_mask_img.get_fdata()
+        mask_array[mask_array > 0] = 1
+        tedana_mask_img = nib.Nifti1Image(mask_array, tedana_mask_img.affine)
 
         # Save tedana optimally combined data and mask into mat files
         tedana_optcom_mat = os.path.join(sbj_dir, "optcom_bold.mat")
@@ -103,13 +108,13 @@ for sbj in os.listdir(repo):
 
         # Remove tedana output directory and the anat and func directories
         subprocess.run(f"rm -rf {tedana_output_dir}", shell=True, cwd=repo)
-        subprocess.run(f"rm -rf {sbj}/anat", shell=True, cwd=repo)
-        subprocess.run(f"rm -rf {sbj}/func", shell=True, cwd=repo)
+        subprocess.run(f"datalad drop {sbj}/anat", shell=True, cwd=repo)
+        subprocess.run(f"datalad drop {sbj}/func", shell=True, cwd=repo)
 
         # Here run matlab script with subprocess.run
         print("Running GIFT version of maPCA")
 
-        cmd = f"matlab -nodesktop -nosplash -nojvm -logfile {sbj_dir}/giftoutput.txt -r \"try;addpath(genpath('{gift}'));[comp_est_AIC,comp_est_KIC,comp_est_MDL,mdl,aic,kic]=icatb_estimate_dimension('{tedana_optcom_mat}','{tedana_mask_mat}','double',3);save('{sbj_dir}/gift.mat','comp_est_AIC','comp_est_KIC','comp_est_MDL');end;quit\""
+        cmd = f'matlab -nodesktop -nosplash -nojvm -logfile {sbj_dir}/giftoutput.txt -r "addpath(genpath(\'{gift}\'));[comp_est_AIC,comp_est_KIC,comp_est_MDL,mdl,aic,kic]=icatb_estimate_dimension(\'{tedana_optcom_mat}\',\'{tedana_mask_mat}\',\'double\',3);save(\'{sbj_dir}/gift.mat\',\'comp_est_AIC\',\'comp_est_KIC\',\'comp_est_MDL\');quit"'
 
         proc = subprocess.Popen(
             cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE
@@ -129,7 +134,7 @@ for sbj in os.listdir(repo):
                 "maPCA_KIC": kic,
                 "GIFT_KIC": giftmat["comp_est_KIC"][0][0],
                 "maPCA_MDL": mdl,
-                "GIFT_MDL": giftmat["compt_est_MDL"][0][0],
+                "GIFT_MDL": giftmat["comp_est_MDL"][0][0],
             },
             ignore_index=True,
         )
