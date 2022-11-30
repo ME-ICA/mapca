@@ -99,9 +99,9 @@ if (dim_est_method == 2)
     end
 end
 
-if (ischar(maskvec) && endsWith(maskvec,'.mat'))
+if (ischar(maskvec) && strcmp(maskvec(end-3:end), '.mat'))
     mask = load(maskvec);
-    maskvec = mask.data;
+    maskvec = mask.mask;
 else
     % If mask is supplied as a file, read data and convert data to
     % logical
@@ -114,7 +114,7 @@ else
 end
 
 %% Get dimensions of data by loading first time point
-if (ischar(files) && ~endsWith(files,'.mat'))
+if (ischar(files) && ~strcmp(files(end-3:end), '.mat'))
     files = icatb_rename_4d_file(files);
     first_file = deblank(files(1, :));
     data = icatb_loadData(first_file);
@@ -124,7 +124,7 @@ if (ischar(files) && ~endsWith(files,'.mat'))
         tdim = size(data, 4);
     end
 else
-    if (ischar(files) && endsWith(files,'.mat'))
+    if (ischar(files) && strcmp(files(end-3:end), '.mat'))
         data = load(files);
         data = data.data;
     else
@@ -175,7 +175,7 @@ if (length(maskvec) ~= xdim*ydim*zdim)
 end
 
 %% Load data by reading timepoint at a time
-if (ischar(files) && ~endsWith(files,'.mat'))
+if (ischar(files) && ~strcmp(files(end-3:end), '.mat'))
     data = icatb_read_data(files, [], find(maskvec == 1), precisionType);
 else
     if (strcmpi(precisionType, 'single'))
