@@ -105,28 +105,28 @@ for sbj in os.listdir(repo):
 
         # Here run matlab script with subprocess.run
         print("Running GIFT version of maPCA")
- 
-        cmd = f'matlab -nodesktop -nosplash -nojvm -logfile {sbj_dir}/giftoutput.txt -r "try;addpath(genpath(\'{gift}\'));[comp_est_AIC,comp_est_KIC,comp_est_MDL,mdl,aic,kic]=icatb_estimate_dimension(\'{tedana_optcom_mat}\',\'{tedana_mask_mat}\',\'double\',3);save(\'{sbj_dir}/gift.mat\',\'comp_est_AIC\',\'comp_est_KIC\',\'comp_est_MDL\');end;quit"'
-        
-        proc=subprocess.Popen(cmd,shell=True,stdin=subprocess.PIPE,
-                              stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE)
+
+        cmd = f"matlab -nodesktop -nosplash -nojvm -logfile {sbj_dir}/giftoutput.txt -r \"try;addpath(genpath('{gift}'));[comp_est_AIC,comp_est_KIC,comp_est_MDL,mdl,aic,kic]=icatb_estimate_dimension('{tedana_optcom_mat}','{tedana_mask_mat}','double',3);save('{sbj_dir}/gift.mat','comp_est_AIC','comp_est_KIC','comp_est_MDL');end;quit\""
+
+        proc = subprocess.Popen(
+            cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
         output, err = proc.communicate()
-        print(output.decode('utf-8'))
-        
-        giftmat=scipy_io.loadmat(os.path.join(sbj_dir,'gift.mat'))
-        
+        print(output.decode("utf-8"))
+
+        giftmat = scipy_io.loadmat(os.path.join(sbj_dir, "gift.mat"))
+
         # Append AIC, KIC and MDL values to a pandas dataframe
         print("Appending AIC, KIC and MDL values to a pandas dataframe")
         results_df = results_df.append(
             {
                 "Subject": sbj,
                 "maPCA_AIC": aic,
-                "GIFT_AIC": giftmat['comp_est_AIC'][0][0],
+                "GIFT_AIC": giftmat["comp_est_AIC"][0][0],
                 "maPCA_KIC": kic,
-                "GIFT_KIC": giftmat['comp_est_KIC'][0][0],
+                "GIFT_KIC": giftmat["comp_est_KIC"][0][0],
                 "maPCA_MDL": mdl,
-                "GIFT_MDL": giftmat['compt_est_MDL'][0][0],
+                "GIFT_MDL": giftmat["compt_est_MDL"][0][0],
             },
             ignore_index=True,
         )
@@ -134,4 +134,4 @@ for sbj in os.listdir(repo):
         print("Subject", sbj, "done")
 
 # Save pandas dataframe to csv file
-results_df.to_csv(os.path.join(wdir, "results.csv"), index=False)
+results_df.to_csv(os.path.join(wdir, "results_python.csv"), index=False)
