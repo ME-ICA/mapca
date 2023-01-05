@@ -4,10 +4,10 @@
 """
 Base module variables
 """
+
 import importlib.util
 import json
 import os.path as op
-
 from pathlib import Path
 
 # Get version
@@ -82,13 +82,12 @@ EXTRA_REQUIRES = {
         "sphinx-argparse",
     ],
     "tests": TESTS_REQUIRES,
-    "duecredit": ["duecredit"],
 }
 
 ENTRY_POINTS = {}
 
 # Enable a handle to install all extra dependencies at once
-EXTRA_REQUIRES["all"] = list(set([v for deps in EXTRA_REQUIRES.values() for v in deps]))
+EXTRA_REQUIRES["all"] = list({v for deps in EXTRA_REQUIRES.values() for v in deps})
 
 # Supported Python versions using PEP 440 version specifiers
 # Should match the same set of Python versions as classifiers

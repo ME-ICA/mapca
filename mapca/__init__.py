@@ -4,7 +4,6 @@ GIFT.
 """
 
 from ._version import get_versions
-from .due import Doi, due
 from .mapca import MovingAveragePCA, ma_pca
 
 __version__ = get_versions()["version"]
