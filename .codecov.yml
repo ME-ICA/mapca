@@ -16,6 +16,5 @@ coverage:
 
 ignore:
   - "mapca/tests/"
-  - "mapca/due.py"
   - "mapca/_version.py"
   - "mapca/info.py"
