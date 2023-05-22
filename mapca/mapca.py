@@ -128,7 +128,7 @@ class MovingAveragePCA:
         self.criterion = criterion
         self.normalize = normalize
 
-    def _fit(self, img, mask):
+    def _fit(self, img, mask, IIDsubsample=None):
         LGR.info(
             "Performing dimensionality reduction based on GIFT "
             "(https://trendscenter.org/software/gift/) and Li, Y. O., Adali, T., "
@@ -209,6 +209,20 @@ class MovingAveragePCA:
             dim_n = x_single.ndim
 
         sub_iid_sp_median = int(np.round(np.median(sub_iid_sp)))
+        LGR.info(f"Esimated subsampling depth for effective i.i.i samples: {sub_iid_sp_median}")
+
+        # Always save the calculated IID subsample value, but, if there is a user provide value, assign that to sub_iid_sp_median
+        #   and use that instead
+        calculated_sub_iid_sp_median = sub_iid_sp_median
+        if IIDsubsample:
+            if (isinstance(IIDsubsample, int) or (isinstance(IIDsubsample, float) and IIDsubsample == int(IIDsubsample))) and (1 <= IIDsubsample <= n_samples):        
+                sub_iid_sp_median = IIDsubsample
+            else:
+                raise ValueError(f"IIDsubsample must be an integer between 1 and the number of samples. It is {IIDsubsample}")
+
+
+
+
         if np.floor(np.power(n_samples / n_timepoints, 1 / dim_n)) < sub_iid_sp_median:
             sub_iid_sp_median = int(np.floor(np.power(n_samples / n_timepoints, 1 / dim_n)))
         N = np.round(n_samples / np.power(sub_iid_sp_median, dim_n))
@@ -236,7 +250,7 @@ class MovingAveragePCA:
             LGR.info("SVD done on subsampled i.i.d. data")
             eigenvalues = eigenvalues[::-1]
 
-        LGR.info("Effective number of i.i.d. samples %d" % N)
+        LGR.info("Effective number of i.i.d. samples %d from %d total voxels" % (N, n_samples))
 
         # Make eigen spectrum adjustment
         LGR.info("Perform eigen spectrum adjustment ...")
@@ -344,6 +358,12 @@ class MovingAveragePCA:
             "n_components": ppca.n_components_,
             "explained_variance_total": cumsum_varexp,
         }
+        self.subsampling_ = {
+            "calculated_IID_subsample_depth": calculated_sub_iid_sp_median,
+            "used_IID_subsample_depth": sub_iid_sp_median,
+            "effective_num_IID_samples": N,
+            "total_num_samples": n_samples,
+        }
 
         # Assign attributes from model
         self.components_ = ppca.components_[:n_components, :]
@@ -365,7 +385,7 @@ class MovingAveragePCA:
         self.u_ = component_maps
         self.u_nii_ = nib.Nifti1Image(component_maps_3d, img.affine, img.header)
 
-    def fit(self, img, mask):
+    def fit(self, img, mask, IIDsubsample=None):
         """Fit the model with X.
 
         Parameters
@@ -374,16 +394,21 @@ class MovingAveragePCA:
             Data on which to apply PCA.
         mask : 3D niimg_like
             Mask to apply on ``img``.
+        IIDsubsample : int
+            The subsampling value so that the voxels are assumed to be
+            independent and identically distributed (IID).
+            Default=None (use estimated value)
+
 
         Returns
         -------
         self : object
             Returns the instance itself.
         """
-        self._fit(img, mask)
+        self._fit(img, mask, IIDsubsample=IIDsubsample)
         return self
 
-    def fit_transform(self, img, mask):
+    def fit_transform(self, img, mask, IIDsubsample=None):
         """Fit the model with X and apply the dimensionality reduction on X.
 
         Parameters
@@ -392,6 +417,12 @@ class MovingAveragePCA:
             Data on which to apply PCA.
         mask : 3D niimg_like
             Mask to apply on ``img``.
+        IIDsubsample : int
+            The subsampling value so that the voxels are assumed to be independent
+            and identically distributed (IID)
+            2 would mean using every other voxel in 3D space would mean the
+            remaining voxels are considered IID. 3 would mean every 3rd voxel.
+            Default=None (use estimated value)
 
         Returns
         -------
@@ -402,8 +433,17 @@ class MovingAveragePCA:
         -----
         The transformation step is different from scikit-learn's approach,
         which ignores explained variance.
+
+        IIDsubsample is always calculated automatically, but it should be consistent
+        across a dataset with the sample acquisition parameters. In practice, it sometimes
+        gives a different value and causes problems. That is, for a dataset with 100 runs,
+        it is 2 in most runs, but when it is 3 substantially fewer components are estimated
+        and when it is 1, there is almost no dimensionality reduction. This has been added
+        as an option user provided parameter to use with caution. If mapca seems to be having
+        periodic mis-estimates, then this parameter should make it possible to set the IID
+        subsample size to be consistent across a dataset.
         """
-        self._fit(img, mask)
+        self._fit(img, mask, IIDsubsample=IIDsubsample)
         return self.transform(img)
 
     def transform(self, img):
@@ -471,7 +511,7 @@ class MovingAveragePCA:
         return img_orig
 
 
-def ma_pca(img, mask, criterion="mdl", normalize=False):
+def ma_pca(img, mask, criterion="mdl", normalize=False, IIDsubsample=None):
     """Perform moving average-based PCA on imaging data.
 
     Run Singular Value Decomposition (SVD) on input data,
@@ -493,6 +533,12 @@ def ma_pca(img, mask, criterion="mdl", normalize=False):
         ``kic`` refers to the Kullback-Leibler Information Criterion, which is the middle option.
     normalize : bool, optional
         Whether to normalize (zero mean and unit standard deviation) or not. Default is False.
+    IIDsubsample : int, optional
+            The subsampling value so that the voxels are assumed to be independent
+            and identically distributed (IID).
+            2 would mean using every other voxel in 3D space would mean the
+            remaining voxels are considered IID. 3 would mean every 3rd voxel.
+            Default=None (use estimated value)
 
     Returns
     -------
@@ -506,7 +552,7 @@ def ma_pca(img, mask, criterion="mdl", normalize=False):
         Component timeseries.
     """
     pca = MovingAveragePCA(criterion=criterion, normalize=normalize)
-    _ = pca.fit_transform(img, mask)
+    _ = pca.fit_transform(img, mask, IIDsubsample=IIDsubsample)
     u = pca.u_
     s = pca.explained_variance_
     varex_norm = pca.explained_variance_ratio_
