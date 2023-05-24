@@ -228,7 +228,7 @@ class MovingAveragePCA:
             if ((isinstance(subsample_depth, int)
                  or (isinstance(subsample_depth, float)
                  and subsample_depth == int(subsample_depth)))
-                 and (1 <= subsample_depth) and ((n_samples / (subsample_depth ** 3)) >= 100)):
+                and (1 <= subsample_depth) and ((n_samples / (subsample_depth ** 3)) >= 100)):
                 sub_iid_sp_median = subsample_depth
             else:
                 # The logic of the upper bound is subsample_depth^3 is the fraction of samples
