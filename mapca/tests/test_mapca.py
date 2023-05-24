@@ -95,3 +95,9 @@ def test_MovingAveragePCA():
 
     test_data_est = pca2.inverse_transform(u2, test_mask_img)
     assert test_data_est.shape == test_img.shape
+
+    # Testing setting inputting a pre-defined subsampling depth
+    pca3 = MovingAveragePCA(criterion="mdl", normalize=False)
+    pca3.fit(test_img, test_mask_img, subsample_depth=2)
+    assert pca3.subsampling_['calculated_IID_subsample_depth'] == 1
+    assert pca3.subsampling_['used_IID_subsample_depth'] == 2
