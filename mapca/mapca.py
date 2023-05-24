@@ -221,13 +221,14 @@ class MovingAveragePCA:
 
         LGR.info("Estimated subsampling depth for effective i.i.d samples: %d" % sub_iid_sp_median)
 
-        # Always save the calculated IID subsample value, but, if there is a user provide value, 
+        # Always save the calculated IID subsample value, but, if there is a user provide value,
         # assign that to sub_iid_sp_median and use that instead
         calculated_sub_iid_sp_median = sub_iid_sp_median
         if subsample_depth:
-            if ((isinstance(subsample_depth, int) or (isinstance(subsample_depth, float) 
-                                                     and subsample_depth == int(subsample_depth)))
-                and (1 <= subsample_depth) and ((n_samples/(subsample_depth ** 3)) >= 100)):        
+            if ((isinstance(subsample_depth, int)
+                 or (isinstance(subsample_depth, float)
+                 and subsample_depth == int(subsample_depth)))
+                 and (1 <= subsample_depth) and ((n_samples / (subsample_depth ** 3)) >= 100)):
                 sub_iid_sp_median = subsample_depth
             else:
                 # The logic of the upper bound is subsample_depth^3 is the fraction of samples
@@ -237,7 +238,6 @@ class MovingAveragePCA:
                 # probably good to at least include an upper bound.
                 raise ValueError("subsample_depth must be an integer > 1 and will retain >100 "
                                  "samples after subsampling. It is %d" % subsample_depth)
-
 
         N = np.round(n_samples / np.power(sub_iid_sp_median, dim_n))
 
