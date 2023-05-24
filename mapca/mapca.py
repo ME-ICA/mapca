@@ -215,8 +215,10 @@ class MovingAveragePCA:
         sub_iid_sp_mean = np.round(np.mean(sub_iid_sp), 3)
 
         if np.floor(np.power(n_samples / n_timepoints, 1 / dim_n)) < sub_iid_sp_median:
-            LGR.info("Subsampling IID depth estimate too high. Subsampling depth will "
-                     "be defined by number of datapoints rather than IID estimates.")
+            LGR.info(
+                "Subsampling IID depth estimate too high. Subsampling depth will "
+                "be defined by number of datapoints rather than IID estimates."
+            )
             sub_iid_sp_median = int(np.floor(np.power(n_samples / n_timepoints, 1 / dim_n)))
 
         LGR.info("Estimated subsampling depth for effective i.i.d samples: %d" % sub_iid_sp_median)
@@ -225,19 +227,29 @@ class MovingAveragePCA:
         # assign that to sub_iid_sp_median and use that instead
         calculated_sub_iid_sp_median = sub_iid_sp_median
         if subsample_depth:
-            if ((isinstance(subsample_depth, int)
-                 or (isinstance(subsample_depth, float)
-                 and subsample_depth == int(subsample_depth)))
-                and (1 <= subsample_depth) and ((n_samples / (subsample_depth ** 3)) >= 100)):
+            if (
+                (
+                    isinstance(subsample_depth, int)
+                    or (
+                        isinstance(subsample_depth, float)
+                        and subsample_depth == int(subsample_depth)
+                    )
+                )
+                and (1 <= subsample_depth)
+                and ((n_samples / (subsample_depth**3)) >= 100)
+            ):
                 sub_iid_sp_median = subsample_depth
+
             else:
                 # The logic of the upper bound is subsample_depth^3 is the fraction of samples
                 # that removed and it would be good to have at least 100 sampling remaining to
                 # have a useful analysis. Given a masked volume is going to result in fewer
                 # samples remaining in 3D space, this is likely a very liberal upper bound, but
                 # probably good to at least include an upper bound.
-                raise ValueError("subsample_depth must be an integer > 1 and will retain >100 "
-                                 "samples after subsampling. It is %d" % subsample_depth)
+                raise ValueError(
+                    "subsample_depth must be an integer > 1 and will retain >100 "
+                    "samples after subsampling. It is %d" % subsample_depth
+                )
 
         N = np.round(n_samples / np.power(sub_iid_sp_median, dim_n))
 
