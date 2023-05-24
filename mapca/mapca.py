@@ -212,27 +212,31 @@ class MovingAveragePCA:
         # Will log the mean value to check if the differences in median within a dataset
         # represent very small changes in the mean. It seems like this is the closest
         # to a non-discrete value to store to compare across runs.
-        sub_iid_sp_mean = np.round(np.mean(sub_iid_sp),3)
-
+        sub_iid_sp_mean = np.round(np.mean(sub_iid_sp), 3)
 
         if np.floor(np.power(n_samples / n_timepoints, 1 / dim_n)) < sub_iid_sp_median:
-            LGR.info(f"Subsampling IID depth estimate too high. Subsampling depth will "
+            LGR.info("Subsampling IID depth estimate too high. Subsampling depth will "
                      "be defined by number of datapoints rather than IID estimates.")
             sub_iid_sp_median = int(np.floor(np.power(n_samples / n_timepoints, 1 / dim_n)))
 
-        LGR.info(f"Estimated subsampling depth for effective i.i.d samples: {sub_iid_sp_median}")
+        LGR.info("Estimated subsampling depth for effective i.i.d samples: %d" % sub_iid_sp_median)
 
-        # Always save the calculated IID subsample value, but, if there is a user provide value, assign that to sub_iid_sp_median
-        #   and use that instead
+        # Always save the calculated IID subsample value, but, if there is a user provide value, 
+        # assign that to sub_iid_sp_median and use that instead
         calculated_sub_iid_sp_median = sub_iid_sp_median
         if subsample_depth:
-            if (isinstance(subsample_depth, int) or (isinstance(subsample_depth, float) and subsample_depth == int(subsample_depth))) and (1 <= subsample_depth) and ((n_samples/(subsample_depth ** 3)) >= 100):        
+            if ((isinstance(subsample_depth, int) or (isinstance(subsample_depth, float) 
+                                                     and subsample_depth == int(subsample_depth)))
+                and (1 <= subsample_depth) and ((n_samples/(subsample_depth ** 3)) >= 100)):        
                 sub_iid_sp_median = subsample_depth
             else:
-                # The logic of the upper bound is subsample_depth^3 is the fraction of samples that removed and it would be good to have at least 100 sampling remaining to have a useful analysis
-                # Given a masked volume is going to result in fewer samples remaining in 3D space, this is likely a very liberal upper bound, but
+                # The logic of the upper bound is subsample_depth^3 is the fraction of samples
+                # that removed and it would be good to have at least 100 sampling remaining to
+                # have a useful analysis. Given a masked volume is going to result in fewer
+                # samples remaining in 3D space, this is likely a very liberal upper bound, but
                 # probably good to at least include an upper bound.
-                raise ValueError(f"subsample_depth must be an integer > 1 and will retain at least 100 samples after subsampling. It is {subsample_depth}")
+                raise ValueError("subsample_depth must be an integer > 1 and will retain >100 "
+                                 "samples after subsampling. It is %d" % subsample_depth)
 
 
         N = np.round(n_samples / np.power(sub_iid_sp_median, dim_n))
@@ -408,13 +412,12 @@ class MovingAveragePCA:
             Mask to apply on ``img``.
         subsample_depth : int, optional
             Dimensionality reduction is calculated on a subset of voxels defined by
-            this depth. 2 would mean using every other voxel in 3D space and 3 would 
-            mean every 3rd voxel. Default=None (estimated depth to make remaining 
+            this depth. 2 would mean using every other voxel in 3D space and 3 would
+            mean every 3rd voxel. Default=None (estimated depth to make remaining
             voxels independent and identically distributed (IID)
             The subsampling value so that the voxels are assumed to be
             independent and identically distributed (IID).
             Default=None (use estimated value)
-
 
         Returns
         -------
@@ -435,8 +438,8 @@ class MovingAveragePCA:
             Mask to apply on ``img``.
         subsample_depth : int, optional
             Dimensionality reduction is calculated on a subset of voxels defined by
-            this depth. 2 would mean using every other voxel in 3D space and 3 would 
-            mean every 3rd voxel. Default=None (estimated depth to make remaining 
+            this depth. 2 would mean using every other voxel in 3D space and 3 would
+            mean every 3rd voxel. Default=None (estimated depth to make remaining
             voxels independent and identically distributed (IID)
 
         Returns
@@ -551,8 +554,8 @@ def ma_pca(img, mask, criterion="mdl", normalize=False, subsample_depth=None):
         Whether to normalize (zero mean and unit standard deviation) or not. Default is False.
     subsample_depth : int, optional
         Dimensionality reduction is calculated on a subset of voxels defined by
-        this depth. 2 would mean using every other voxel in 3D space and 3 would 
-        mean every 3rd voxel. Default=None (estimated depth to make remaining 
+        this depth. 2 would mean using every other voxel in 3D space and 3 would
+        mean every 3rd voxel. Default=None (estimated depth to make remaining
         voxels independent and identically distributed (IID)
 
     Returns
