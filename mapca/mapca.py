@@ -210,8 +210,8 @@ class MovingAveragePCA:
 
         sub_iid_sp_median = int(np.round(np.median(sub_iid_sp)))
 
-        # Calculating and logging the mean value to check if the differences in median 
-        # within a dataset represent very small changes in the mean. It seems like this 
+        # Calculating and logging the mean value to check if the differences in median
+        # within a dataset represent very small changes in the mean. It seems like this
         # is the closest to a non-discrete value to store to compare across runs.
         sub_iid_sp_mean = np.round(np.mean(sub_iid_sp), 3)
 
@@ -221,7 +221,7 @@ class MovingAveragePCA:
                 "be defined by number of datapoints rather than IID estimates."
             )
             sub_iid_sp_median = int(np.floor(np.power(n_samples / n_timepoints, 1 / dim_n)))
-        
+
         LGR.info("Estimated subsampling depth for effective i.i.d samples: %d" % sub_iid_sp_median)
 
         N = np.round(n_samples / np.power(sub_iid_sp_median, dim_n))
