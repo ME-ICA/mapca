@@ -209,8 +209,21 @@ class MovingAveragePCA:
             dim_n = x_single.ndim
 
         sub_iid_sp_median = int(np.round(np.median(sub_iid_sp)))
+
+        # Calculating and logging the mean value to check if the differences in median 
+        # within a dataset represent very small changes in the mean. It seems like this 
+        # is the closest to a non-discrete value to store to compare across runs.
+        sub_iid_sp_mean = np.round(np.mean(sub_iid_sp), 3)
+
         if np.floor(np.power(n_samples / n_timepoints, 1 / dim_n)) < sub_iid_sp_median:
+            LGR.info(
+                "Subsampling IID depth estimate too high. Subsampling depth will "
+                "be defined by number of datapoints rather than IID estimates."
+            )
             sub_iid_sp_median = int(np.floor(np.power(n_samples / n_timepoints, 1 / dim_n)))
+        
+        LGR.info("Estimated subsampling depth for effective i.i.d samples: %d" % sub_iid_sp_median)
+
         N = np.round(n_samples / np.power(sub_iid_sp_median, dim_n))
 
         if sub_iid_sp_median != 1:
@@ -236,7 +249,7 @@ class MovingAveragePCA:
             LGR.info("SVD done on subsampled i.i.d. data")
             eigenvalues = eigenvalues[::-1]
 
-        LGR.info("Effective number of i.i.d. samples %d" % N)
+        LGR.info("Effective number of i.i.d. samples %d from %d total voxels" % (N, n_samples))
 
         # Make eigen spectrum adjustment
         LGR.info("Perform eigen spectrum adjustment ...")
@@ -343,6 +356,12 @@ class MovingAveragePCA:
         self.all_ = {
             "n_components": ppca.n_components_,
             "explained_variance_total": cumsum_varexp,
+        }
+        self.subsampling_ = {
+            "calculated_IID_subsample_depth": sub_iid_sp_median,
+            "calculated_IID_subsample_mean": sub_iid_sp_mean,
+            "effective_num_IID_samples": N,
+            "total_num_samples": n_samples,
         }
 
         # Assign attributes from model
