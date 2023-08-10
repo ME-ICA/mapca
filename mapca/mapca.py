@@ -209,6 +209,7 @@ class MovingAveragePCA:
             dim_n = x_single.ndim
 
         sub_iid_sp_median = int(np.round(np.median(sub_iid_sp)))
+
         # Will log the mean value to check if the differences in median within a dataset
         # represent very small changes in the mean. It seems like this is the closest
         # to a non-discrete value to store to compare across runs.
@@ -385,6 +386,7 @@ class MovingAveragePCA:
             "explained_variance_total": cumsum_varexp,
         }
         self.subsampling_ = {
+
             "calculated_IID_subsample_depth": calculated_sub_iid_sp_median,
             "calculated_IID_subsample_mean": sub_iid_sp_mean,
             "IID_subsample_input": sub_iid_sp,
