@@ -128,7 +128,7 @@ class MovingAveragePCA:
         self.criterion = criterion
         self.normalize = normalize
 
-    def _fit(self, img, mask):
+    def _fit(self, img, mask, subsample_depth=None):
         LGR.info(
             "Performing dimensionality reduction based on GIFT "
             "(https://trendscenter.org/software/gift/) and Li, Y. O., Adali, T., "
@@ -210,9 +210,9 @@ class MovingAveragePCA:
 
         sub_iid_sp_median = int(np.round(np.median(sub_iid_sp)))
 
-        # Calculating and logging the mean value to check if the differences in median
-        # within a dataset represent very small changes in the mean. It seems like this
-        # is the closest to a non-discrete value to store to compare across runs.
+        # Will log the mean value to check if the differences in median within a dataset
+        # represent very small changes in the mean. It seems like this is the closest
+        # to a non-discrete value to store to compare across runs.
         sub_iid_sp_mean = np.round(np.mean(sub_iid_sp), 3)
 
         if np.floor(np.power(n_samples / n_timepoints, 1 / dim_n)) < sub_iid_sp_median:
@@ -223,6 +223,34 @@ class MovingAveragePCA:
             sub_iid_sp_median = int(np.floor(np.power(n_samples / n_timepoints, 1 / dim_n)))
 
         LGR.info("Estimated subsampling depth for effective i.i.d samples: %d" % sub_iid_sp_median)
+
+        # Always save the calculated IID subsample value, but, if there is a user provide value,
+        # assign that to sub_iid_sp_median and use that instead
+        calculated_sub_iid_sp_median = sub_iid_sp_median
+        if subsample_depth:
+            if (
+                (
+                    isinstance(subsample_depth, int)
+                    or (
+                        isinstance(subsample_depth, float)
+                        and subsample_depth == int(subsample_depth)
+                    )
+                )
+                and (1 <= subsample_depth)
+                and ((n_samples / (subsample_depth**3)) >= 100)
+            ):
+                sub_iid_sp_median = subsample_depth
+
+            else:
+                # The logic of the upper bound is subsample_depth^3 is the fraction of samples
+                # that removed and it would be good to have at least 100 sampling remaining to
+                # have a useful analysis. Given a masked volume is going to result in fewer
+                # samples remaining in 3D space, this is likely a very liberal upper bound, but
+                # probably good to at least include an upper bound.
+                raise ValueError(
+                    "subsample_depth must be an integer > 1 and will retain >100 "
+                    "samples after subsampling. It is %d" % subsample_depth
+                )
 
         N = np.round(n_samples / np.power(sub_iid_sp_median, dim_n))
 
@@ -358,8 +386,11 @@ class MovingAveragePCA:
             "explained_variance_total": cumsum_varexp,
         }
         self.subsampling_ = {
-            "calculated_IID_subsample_depth": sub_iid_sp_median,
+
+            "calculated_IID_subsample_depth": calculated_sub_iid_sp_median,
             "calculated_IID_subsample_mean": sub_iid_sp_mean,
+            "IID_subsample_input": sub_iid_sp,
+            "used_IID_subsample_depth": sub_iid_sp_median,
             "effective_num_IID_samples": N,
             "total_num_samples": n_samples,
         }
@@ -384,7 +415,7 @@ class MovingAveragePCA:
         self.u_ = component_maps
         self.u_nii_ = nib.Nifti1Image(component_maps_3d, img.affine, img.header)
 
-    def fit(self, img, mask):
+    def fit(self, img, mask, subsample_depth=None):
         """Fit the model with X.
 
         Parameters
@@ -393,16 +424,24 @@ class MovingAveragePCA:
             Data on which to apply PCA.
         mask : 3D niimg_like
             Mask to apply on ``img``.
+        subsample_depth : int, optional
+            Dimensionality reduction is calculated on a subset of voxels defined by
+            this depth. 2 would mean using every other voxel in 3D space and 3 would
+            mean every 3rd voxel. Default=None (estimated depth to make remaining
+            voxels independent and identically distributed (IID)
+            The subsampling value so that the voxels are assumed to be
+            independent and identically distributed (IID).
+            Default=None (use estimated value)
 
         Returns
         -------
         self : object
             Returns the instance itself.
         """
-        self._fit(img, mask)
+        self._fit(img, mask, subsample_depth=subsample_depth)
         return self
 
-    def fit_transform(self, img, mask):
+    def fit_transform(self, img, mask, subsample_depth=None):
         """Fit the model with X and apply the dimensionality reduction on X.
 
         Parameters
@@ -411,6 +450,11 @@ class MovingAveragePCA:
             Data on which to apply PCA.
         mask : 3D niimg_like
             Mask to apply on ``img``.
+        subsample_depth : int, optional
+            Dimensionality reduction is calculated on a subset of voxels defined by
+            this depth. 2 would mean using every other voxel in 3D space and 3 would
+            mean every 3rd voxel. Default=None (estimated depth to make remaining
+            voxels independent and identically distributed (IID)
 
         Returns
         -------
@@ -421,8 +465,18 @@ class MovingAveragePCA:
         -----
         The transformation step is different from scikit-learn's approach,
         which ignores explained variance.
+
+        subsample_depth is always calculated automatically, but it should be consistent
+        across a dataset with the same acquisition parameters, since spatial dependence
+        should be similar. In practice, it sometimes gives a different value and causes
+        problems. That is, for a dataset with 100 runs, it is 2 in most runs, but when
+        it is 3, substantially fewer components are estimated and when it is 1, there is
+        almost no dimensionality reduction. This has been added as an optional user provided
+        parameter. If mapca seems to be having periodic mis-estimates, then this parameter
+        should make it possible to set the IID subsample depth to be consistent across a
+        dataset.
         """
-        self._fit(img, mask)
+        self._fit(img, mask, subsample_depth=subsample_depth)
         return self.transform(img)
 
     def transform(self, img):
@@ -490,7 +544,7 @@ class MovingAveragePCA:
         return img_orig
 
 
-def ma_pca(img, mask, criterion="mdl", normalize=False):
+def ma_pca(img, mask, criterion="mdl", normalize=False, subsample_depth=None):
     """Perform moving average-based PCA on imaging data.
 
     Run Singular Value Decomposition (SVD) on input data,
@@ -512,6 +566,11 @@ def ma_pca(img, mask, criterion="mdl", normalize=False):
         ``kic`` refers to the Kullback-Leibler Information Criterion, which is the middle option.
     normalize : bool, optional
         Whether to normalize (zero mean and unit standard deviation) or not. Default is False.
+    subsample_depth : int, optional
+        Dimensionality reduction is calculated on a subset of voxels defined by
+        this depth. 2 would mean using every other voxel in 3D space and 3 would
+        mean every 3rd voxel. Default=None (estimated depth to make remaining
+        voxels independent and identically distributed (IID)
 
     Returns
     -------
@@ -525,7 +584,7 @@ def ma_pca(img, mask, criterion="mdl", normalize=False):
         Component timeseries.
     """
     pca = MovingAveragePCA(criterion=criterion, normalize=normalize)
-    _ = pca.fit_transform(img, mask)
+    _ = pca.fit_transform(img, mask, subsample_depth=subsample_depth)
     u = pca.u_
     s = pca.explained_variance_
     varex_norm = pca.explained_variance_ratio_

@@ -53,7 +53,7 @@ def test_mask(testpath):
 @pytest.fixture
 def test_ts(testpath):
     return fetch_file('gz2hb', testpath,
-                      'compt_ts.npy')
+                      'comp_ts.npy')
 
 
 @pytest.fixture
