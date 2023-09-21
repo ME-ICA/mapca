@@ -386,7 +386,6 @@ class MovingAveragePCA:
             "explained_variance_total": cumsum_varexp,
         }
         self.subsampling_ = {
-
             "calculated_IID_subsample_depth": calculated_sub_iid_sp_median,
             "calculated_IID_subsample_mean": sub_iid_sp_mean,
             "IID_subsample_input": sub_iid_sp,
@@ -402,7 +401,7 @@ class MovingAveragePCA:
         self.singular_values_ = ppca.singular_values_[:n_components]
         self.mean_ = ppca.mean_
         self.n_components_ = n_components
-        self.n_features_ = ppca.n_features_
+        self.n_features_ = ppca.n_features_in_
         self.n_samples_ = ppca.n_samples_
         # Commenting out noise variance as it depends on the covariance of the estimation
         # self.noise_variance_ = ppca.noise_variance_
