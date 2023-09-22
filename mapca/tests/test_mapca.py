@@ -74,7 +74,7 @@ def test_MovingAveragePCA():
     # Create mask
     test_mask = np.zeros((N_VOXELS, N_VOXELS, N_VOXELS), dtype=int)
     test_mask[5:-5, 5:-5, 5:-5] = 1
-    test_mask_img = nib.nifti1.Nifti1Image(test_mask, xform, dtype=int)
+    test_mask_img = nib.nifti1.Nifti1Image(test_mask, xform, dtype=np.int16)
     n_voxels_in_mask = np.sum(test_mask)
 
     test_data = masking.apply_mask(test_img, test_mask_img).T
