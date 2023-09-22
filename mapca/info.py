@@ -61,7 +61,7 @@ REQUIRES = [
     "nibabel>=2.5.1",
     "nilearn",
     "numpy>=1.15",
-    "scikit-learn>=0.22",
+    "scikit-learn>=1.2",
     "scipy>=1.3.3",
 ]
 
