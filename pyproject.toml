@@ -1,6 +1,5 @@
 [build-system]
-requires = ["hatchling", "hatch-vcs"]
-build-backend = "hatchling.build"
+requires = ["setuptools", "wheel"]
 
 [project]
 name = "maPCA"
@@ -11,59 +10,11 @@ dependencies = [
     "nilearn>=0.7",
     "numpy>=1.16",
     "scipy>=1.2",
-    "scikit-learn > 1.2",
+    "sklearn > 1.2",
 ]
 dynamic = [
-    "version",
+    "versioneer",
 ]
-
-[project.optional-dependencies]
-dev = ["pre-commit"]
-doc = [
-    "sphinx>=6.2.1",
-    "sphinx_copybutton",
-    "sphinx_rtd_theme>=1.2.2",
-    "sphinx-argparse",
-    "sphinxcontrib-bibtex",
-]
-tests = [
-    "codecov",
-    "coverage",
-    "flake8>=3.7",
-    "flake8-black",
-    "flake8-isort",
-    "flake8-pyproject",
-    "pytest",
-    "pytest-cov>=4.0.0",
-    "requests",
-]
-
-# Aliases
-all = ["tedana[dev,doc,tests]"]
-
-#
-# Hatch configurations
-#
-
-[tool.hatch.metadata]
-allow-direct-references = true
-
-[tool.hatch.build.targets.sdist]
-exclude = [".git_archival.txt"]  # No longer needed in sdist
-
-[tool.hatch.build.targets.wheel]
-packages = ["mapca"]
-exclude = [
-    "mapca/tests/data",  # Large test data directory
-]
-
-##  The following two sections configure setuptools_scm in the hatch way
-
-[tool.hatch.version]
-source = "vcs"
-
-[tool.hatch.build.hooks.vcs]
-version-file = "mapca/_version.py"
 
 [tool.black]
 line-length = 99
@@ -87,38 +38,3 @@ exclude = '''
   | mapca/_version.py
 )
 '''
-
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-
-[tool.flake8]
-max-line-length = 99
-exclude = [
-    "*build/",
-    "mapca/_version.py",
-]
-ignore = ["E203", "E402", "W503"]
-per-file-ignores = [
-    "*/__init__.py: F401",
-]
-docstring-convention = "numpy"
-
-[tool.coverage.run]
-branch = true
-omit = [
-    "*/tests/*",
-    "*/__init__.py",
-    "*/conftest.py",
-    "mapca/_version.py",
-]
-
-[tool.coverage.report]
-# Regexes for lines to exclude from consideration
-exclude_lines = [
-    'raise NotImplementedError',
-    'warnings\.warn',
-]
-
-[tool.pytest]
-log_cli = true
