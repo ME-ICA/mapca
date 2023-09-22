@@ -3,12 +3,11 @@ mapca: A Python implementation of the moving average principal components analys
 GIFT.
 """
 
-from ._version import get_versions
-from .mapca import MovingAveragePCA, ma_pca
-
-__version__ = get_versions()["version"]
-
 import warnings
+
+from mapca.__about__ import __version__
+
+from .mapca import MovingAveragePCA, ma_pca
 
 # cmp is not used, so ignore nipype-generated warnings
 warnings.filterwarnings("ignore", r"cmp not installed")
@@ -18,5 +17,3 @@ __all__ = [
     "MovingAveragePCA",
     "__version__",
 ]
-
-del get_versions
