@@ -10,9 +10,9 @@ repos:
     rev: 23.9.1
     hooks:
       - id: black
-        files: ^pySPFM/
+        files: ^mapca/
   - repo: https://github.com/pycqa/isort
     rev: 5.12.0
     hooks:
       - id: isort
-        files: ^pySPFM/
+        files: ^mapca/
