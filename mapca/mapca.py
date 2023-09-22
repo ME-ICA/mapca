@@ -386,7 +386,6 @@ class MovingAveragePCA:
             "explained_variance_total": cumsum_varexp,
         }
         self.subsampling_ = {
-
             "calculated_IID_subsample_depth": calculated_sub_iid_sp_median,
             "calculated_IID_subsample_mean": sub_iid_sp_mean,
             "IID_subsample_input": sub_iid_sp,

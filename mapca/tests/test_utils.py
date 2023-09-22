@@ -1,12 +1,11 @@
 """Unit tests for utils."""
 import numpy as np
-from scipy.signal.windows import parzen
 from pytest import raises
 from scipy.signal import detrend
+from scipy.signal.windows import parzen
 from scipy.stats import kurtosis
 
-from mapca.utils import (_autocorr, _eigensp_adj, _icatb_svd,
-                         _subsampling, ent_rate_sp)
+from mapca.utils import _autocorr, _eigensp_adj, _icatb_svd, _subsampling, ent_rate_sp
 
 
 def test_autocorr():
@@ -107,7 +106,7 @@ def test_kurtosis():
     # Calculate kurtosis like GIFT
     kurt_gift = np.zeros((test_data.shape[1], 1))
     for i in range(test_data.shape[1]):
-        data_norm = detrend(test_data[:, i], type='constant')
+        data_norm = detrend(test_data[:, i], type="constant")
         data_norm /= np.std(data_norm)
         kurt_gift[i] = np.mean(data_norm**4) - 3
     kurt_gift[kurt_gift < 0] = 0

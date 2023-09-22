@@ -1,16 +1,16 @@
 """
 Integration test for mapca.
 """
-import nibabel as nib
-import numpy as np
 import shutil
 from os.path import split
+
+import nibabel as nib
+import numpy as np
 
 from mapca.mapca import ma_pca
 
 
-def test_integration(test_img, test_mask, test_ts, test_varex,
-                     test_varex_norm, test_weights):
+def test_integration(test_img, test_mask, test_ts, test_varex, test_varex_norm, test_weights):
 
     test_path, _ = split(test_img)
 
