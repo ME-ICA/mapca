@@ -12,6 +12,9 @@ dependencies = [
     "scipy>=1.2",
     "sklearn > 1.2",
 ]
+dynamic = [
+    "versioneer",
+]
 
 [tool.black]
 line-length = 99
