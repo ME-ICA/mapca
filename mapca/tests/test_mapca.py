@@ -6,7 +6,7 @@ import nibabel as nib
 import numpy as np
 from nilearn import masking
 
-from mapca.mapca import ma_pca, MovingAveragePCA
+from mapca.mapca import MovingAveragePCA, ma_pca
 
 
 def test_ma_pca():
@@ -14,7 +14,7 @@ def test_ma_pca():
 
     n_timepoints = 200
     n_voxels = 20
-    n_vox_total = n_voxels ** 3
+    n_vox_total = n_voxels**3
 
     # Creates fake data to test with
     test_data = np.random.random((n_voxels, n_voxels, n_voxels, n_timepoints))
@@ -74,7 +74,7 @@ def test_MovingAveragePCA():
     # Create mask
     test_mask = np.zeros((N_VOXELS, N_VOXELS, N_VOXELS), dtype=int)
     test_mask[5:-5, 5:-5, 5:-5] = 1
-    test_mask_img = nib.nifti1.Nifti1Image(test_mask, xform)
+    test_mask_img = nib.nifti1.Nifti1Image(test_mask, xform, dtype=np.int16)
     n_voxels_in_mask = np.sum(test_mask)
 
     test_data = masking.apply_mask(test_img, test_mask_img).T
@@ -99,5 +99,5 @@ def test_MovingAveragePCA():
     # Testing setting inputting a pre-defined subsampling depth
     pca3 = MovingAveragePCA(criterion="mdl", normalize=False)
     pca3.fit(test_img, test_mask_img, subsample_depth=2)
-    assert pca3.subsampling_['calculated_IID_subsample_depth'] == 1
-    assert pca3.subsampling_['used_IID_subsample_depth'] == 2
+    assert pca3.subsampling_["calculated_IID_subsample_depth"] == 1
+    assert pca3.subsampling_["used_IID_subsample_depth"] == 2
