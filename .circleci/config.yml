@@ -6,138 +6,138 @@ version: 2.1
 orbs:
   codecov: codecov/codecov@1.0.5
 jobs:
-  makeenv_37:
+  makeenv_38:
     docker:
       - image: continuumio/miniconda3
     working_directory: /tmp/src/mapca
     steps:
       - checkout
       - restore_cache:
-          key: conda-py37-v1-{{ checksum "mapca/info.py" }}-{{ checksum "setup.py" }}
+          key: conda-py38-v1-{{ checksum "pyproject.toml" }}
       - run:
           name: Generate environment
           command: |
-            if [ ! -d /opt/conda/envs/mapca_py37 ]; then
-              conda create -yq -n mapca_py37 python=3.7
-              source activate mapca_py37
+            if [ ! -d /opt/conda/envs/mapca_py38 ]; then
+              conda create -yq -n mapca_py38 python=3.8
+              source activate mapca_py38
               pip install .[tests]
             fi
       - save_cache:
-          key: conda-py37-v1-{{ checksum "mapca/info.py" }}-{{ checksum "setup.py" }}
+          key: conda-py38-v1-{{ checksum "pyproject.toml" }}
           paths:
-            - /opt/conda/envs/mapca_py37
+            - /opt/conda/envs/mapca_py38
 
-  unittest_35:
+  unittest_39:
     docker:
       - image: continuumio/miniconda3
     working_directory: /tmp/src/mapca
     steps:
       - checkout
       - restore_cache:
-          key: conda-py35-v1-{{ checksum "mapca/info.py" }}-{{ checksum "setup.py" }}
-      - run:
-          name: Generate environment
-          command: |
-            apt-get update
-            apt-get install -yqq make
-            if [ ! -d /opt/conda/envs/mapca_py35 ]; then
-              conda create -yq -n mapca_py35 python=3.5
-              source activate mapca_py35
-              pip install .[tests]
-            fi
-      - run:
-          name: Running unit tests
-          command: |
-            source activate mapca_py35
-            py.test --ignore mapca/tests/test_integration.py --cov-append --cov-report term-missing --cov=mapca mapca/
-            mkdir /tmp/src/coverage
-            mv /tmp/src/mapca/.coverage /tmp/src/coverage/.coverage.py35
-      - save_cache:
-          key: conda-py35-v1-{{ checksum "mapca/info.py" }}-{{ checksum "setup.py" }}
-          paths:
-            - /opt/conda/envs/mapca_py35
-      - persist_to_workspace:
-          root: /tmp
-          paths:
-            - src/coverage/.coverage.py35
-
-  unittest_36:
-    docker:
-      - image: continuumio/miniconda3
-    working_directory: /tmp/src/mapca
-    steps:
-      - checkout
-      - restore_cache:
-          key: conda-py36-v1-{{ checksum "mapca/info.py" }}-{{ checksum "setup.py" }}
+          key: conda-py39-v1-{{ checksum "pyproject.toml" }}
       - run:
           name: Generate environment
           command: |
             apt-get update
             apt-get install -yqq make
-            if [ ! -d /opt/conda/envs/mapca_py36 ]; then
-              conda create -yq -n mapca_py36 python=3.6
-              source activate mapca_py36
+            if [ ! -d /opt/conda/envs/mapca_py39 ]; then
+              conda create -yq -n mapca_py39 python=3.9
+              source activate mapca_py39
               pip install .[tests]
             fi
       - run:
           name: Running unit tests
           command: |
-            source activate mapca_py36
+            source activate mapca_py39
             py.test --ignore mapca/tests/test_integration.py --cov-append --cov-report term-missing --cov=mapca mapca/
             mkdir /tmp/src/coverage
-            mv /tmp/src/mapca/.coverage /tmp/src/coverage/.coverage.py36
+            mv /tmp/src/mapca/.coverage /tmp/src/coverage/.coverage.py39
       - save_cache:
-          key: conda-py36-v1-{{ checksum "mapca/info.py" }}-{{ checksum "setup.py" }}
+          key: conda-py39-v1-{{ checksum "pyproject.toml" }}
           paths:
-            - /opt/conda/envs/mapca_py36
+            - /opt/conda/envs/mapca_py39
       - persist_to_workspace:
           root: /tmp
           paths:
-            - src/coverage/.coverage.py36
+            - src/coverage/.coverage.py39
 
-  unittest_37:
+  unittest_310:
     docker:
       - image: continuumio/miniconda3
     working_directory: /tmp/src/mapca
     steps:
       - checkout
       - restore_cache:
-          key: conda-py37-v1-{{ checksum "mapca/info.py" }}-{{ checksum "setup.py" }}
+          key: conda-py310-v1-{{ checksum "pyproject.toml" }}
+      - run:
+          name: Generate environment
+          command: |
+            apt-get update
+            apt-get install -yqq make
+            if [ ! -d /opt/conda/envs/mapca_py310 ]; then
+              conda create -yq -n mapca_py310 python=3.10
+              source activate mapca_py310
+              pip install .[tests]
+            fi
       - run:
           name: Running unit tests
           command: |
-            apt-get update
-            apt-get install -y make
-            source activate mapca_py37  # depends on makeenv_37
+            source activate mapca_py310
             py.test --ignore mapca/tests/test_integration.py --cov-append --cov-report term-missing --cov=mapca mapca/
             mkdir /tmp/src/coverage
-            mv /tmp/src/mapca/.coverage /tmp/src/coverage/.coverage.py37
+            mv /tmp/src/mapca/.coverage /tmp/src/coverage/.coverage.py310
+      - save_cache:
+          key: conda-py310-v1-{{ checksum "pyproject.toml" }}
+          paths:
+            - /opt/conda/envs/mapca_py310
       - persist_to_workspace:
           root: /tmp
           paths:
-            - src/coverage/.coverage.py37
+            - src/coverage/.coverage.py310
 
-  integrationtest_37:
+  unittest_38:
     docker:
       - image: continuumio/miniconda3
     working_directory: /tmp/src/mapca
     steps:
       - checkout
       - restore_cache:
-          key: conda-py37-v1-{{ checksum "mapca/info.py" }}-{{ checksum "setup.py" }}
+          key: conda-py38-v1-{{ checksum "pyproject.toml" }}
       - run:
           name: Running unit tests
           command: |
             apt-get update
             apt-get install -y make
-            source activate mapca_py37  # depends on makeenv_37
+            source activate mapca_py38  # depends on makeenv_38
+            py.test --ignore mapca/tests/test_integration.py --cov-append --cov-report term-missing --cov=mapca mapca/
+            mkdir /tmp/src/coverage
+            mv /tmp/src/mapca/.coverage /tmp/src/coverage/.coverage.py38
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - src/coverage/.coverage.py38
+
+  integrationtest_38:
+    docker:
+      - image: continuumio/miniconda3
+    working_directory: /tmp/src/mapca
+    steps:
+      - checkout
+      - restore_cache:
+          key: conda-py38-v1-{{ checksum "pyproject.toml" }}
+      - run:
+          name: Running unit tests
+          command: |
+            apt-get update
+            apt-get install -y make
+            source activate mapca_py38  # depends on makeenv_38
             py.test --log-cli-level=INFO --cov-append --cov-report term-missing --cov=mapca -k test_integration mapca/tests/test_integration.py
             mkdir /tmp/src/coverage
-            mv /tmp/src/mapca/.coverage /tmp/src/coverage/.coverage.py37
+            mv /tmp/src/mapca/.coverage /tmp/src/coverage/.coverage.py38
       - persist_to_workspace:
           root: /tmp
           paths:
-            - src/coverage/.coverage.py37
+            - src/coverage/.coverage.py38
 
   style_check:
     docker:
@@ -146,13 +146,13 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: conda-py37-v1-{{ checksum "mapca/info.py" }}-{{ checksum "setup.py" }}
+          key: conda-py38-v1-{{ checksum "pyproject.toml" }}
       - run:
           name: Style check
           command: |
             apt-get update
             apt-get install -yqq make
-            source activate mapca_py37  # depends on makeenv37
+            source activate mapca_py38  # depends on makeenv38
             flake8 mapca
 
   merge_coverage:
@@ -164,13 +164,13 @@ jobs:
           at: /tmp
       - checkout
       - restore_cache:
-          key: conda-py37-v1-{{ checksum "mapca/info.py" }}-{{ checksum "setup.py" }}
+          key: conda-py38-v1-{{ checksum "pyproject.toml" }}
       - run:
           name: Merge coverage files
           command: |
             apt-get update
             apt-get install -yqq curl
-            source activate mapca_py37  # depends on makeenv37
+            source activate mapca_py38  # depends on makeenv38
             cd /tmp/src/coverage/
             coverage combine
             coverage xml
@@ -205,23 +205,23 @@ workflows:
   version: 2.1
   build_test:
     jobs:
-      - makeenv_37
-      - unittest_35
-      - unittest_36
-      - unittest_37:
+      - makeenv_38
+      - unittest_39
+      - unittest_310
+      - unittest_38:
           requires:
-            - makeenv_37
-      - integrationtest_37:
+            - makeenv_38
+      - integrationtest_38:
           requires:
-            - makeenv_37
+            - makeenv_38
       - style_check:
           requires:
-            - makeenv_37
+            - makeenv_38
       - merge_coverage:
           requires:
-            - unittest_35
-            - unittest_36
-            - unittest_37
+            - unittest_38
+            - unittest_39
+            - unittest_310
       - deploy:
           requires:
             - merge_coverage
