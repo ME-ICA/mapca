@@ -1,6 +1,7 @@
 """
 Integration test for mapca.
 """
+
 import shutil
 from os.path import split
 

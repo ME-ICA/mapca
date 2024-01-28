@@ -1,4 +1,5 @@
 """Unit tests for utils."""
+
 import numpy as np
 from pytest import raises
 from scipy.signal import detrend
