@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 """
+
 import logging
 
 import nibabel as nib
@@ -401,7 +402,7 @@ class MovingAveragePCA:
         self.singular_values_ = ppca.singular_values_[:n_components]
         self.mean_ = ppca.mean_
         self.n_components_ = n_components
-        self.n_features_ = ppca.n_features_
+        self.n_features_ = ppca.n_features_in_
         self.n_samples_ = ppca.n_samples_
         # Commenting out noise variance as it depends on the covariance of the estimation
         # self.noise_variance_ = ppca.noise_variance_

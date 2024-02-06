@@ -1,6 +1,7 @@
 """
 PCA based on Moving Average (stationary Gaussian) process
 """
+
 import logging
 
 import numpy as np
