@@ -1,9 +1,7 @@
-"""
-mapca: A Python implementation of the moving average principal components analysis methods from
-GIFT.
-"""
+"""mapca: Python implementation of the moving average principal components analysis from GIFT."""
 
 import warnings
+
 
 from mapca.__about__ import __version__
 

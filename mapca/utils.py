@@ -1,6 +1,4 @@
-"""
-PCA based on Moving Average (stationary Gaussian) process
-"""
+"""PCA based on Moving Average (stationary Gaussian) process."""
 
 import logging
 
@@ -16,7 +14,7 @@ LGR = logging.getLogger(__name__)
 
 def _autocorr(data):
     """
-    Calculates the auto correlation of a given array.
+    Calculate the auto correlation of a given array.
 
     Parameters
     ----------
@@ -35,8 +33,9 @@ def _autocorr(data):
 
 def ent_rate_sp(data, sm_window):
     """
-    Calculate the entropy rate of a stationary Gaussian random process using
-    spectrum estimation with smoothing window.
+    Calculate the entropy rate of a stationary Gaussian random process.
+
+    Uses spectrum estimation with smoothing window.
 
     Parameters
     ----------
@@ -61,7 +60,6 @@ def ent_rate_sp(data, sm_window):
       functional magnetic resonance imaging data.
       Human brain mapping, 28(11), pp.1251-1266.
     """
-
     dims = data.shape
 
     if data.ndim == 3 and min(dims) != 1:
@@ -94,30 +92,30 @@ def ent_rate_sp(data, sm_window):
     data_corr /= vcu
 
     if sm_window:
-        M = [int(i) for i in np.ceil(np.array(dims) / 10)]
+        m = [int(i) for i in np.ceil(np.array(dims) / 10)]
 
         # Get Parzen window for each spatial direction
         parzen_w_3 = np.zeros((2 * dims[2] - 1,))
-        parzen_w_3[(dims[2] - M[2] - 1) : (dims[2] + M[2])] = parzen(2 * M[2] + 1)
+        parzen_w_3[(dims[2] - m[2] - 1) : (dims[2] + m[2])] = parzen(2 * m[2] + 1)
 
         parzen_w_2 = np.zeros((2 * dims[1] - 1,))
-        parzen_w_2[(dims[1] - M[1] - 1) : (dims[1] + M[1])] = parzen(2 * M[1] + 1)
+        parzen_w_2[(dims[1] - m[1] - 1) : (dims[1] + m[1])] = parzen(2 * m[1] + 1)
 
         parzen_w_1 = np.zeros((2 * dims[0] - 1,))
-        parzen_w_1[(dims[0] - M[0] - 1) : (dims[0] + M[0])] = parzen(2 * M[0] + 1)
+        parzen_w_1[(dims[0] - m[0] - 1) : (dims[0] + m[0])] = parzen(2 * m[0] + 1)
 
         # Scale Parzen windows
-        parzen_window_2D = np.dot(parzen_w_1[np.newaxis, :].T, parzen_w_2[np.newaxis, :])
-        parzen_window_3D = np.zeros((2 * dims[0] - 1, 2 * dims[1] - 1, 2 * dims[2] - 1))
+        parzen_window_2d = np.dot(parzen_w_1[np.newaxis, :].T, parzen_w_2[np.newaxis, :])
+        parzen_window_3d = np.zeros((2 * dims[0] - 1, 2 * dims[1] - 1, 2 * dims[2] - 1))
         for m3 in range(dims[2] - 1):
-            parzen_window_3D[:, :, (dims[2] - 1) - m3] = np.dot(
-                parzen_window_2D, parzen_w_3[dims[2] - 1 - m3]
+            parzen_window_3d[:, :, (dims[2] - 1) - m3] = np.dot(
+                parzen_window_2d, parzen_w_3[dims[2] - 1 - m3]
             )
-            parzen_window_3D[:, :, (dims[2] - 1) + m3] = np.dot(
-                parzen_window_2D, parzen_w_3[dims[2] - 1 + m3]
+            parzen_window_3d[:, :, (dims[2] - 1) + m3] = np.dot(
+                parzen_window_2d, parzen_w_3[dims[2] - 1 + m3]
             )
         # Apply 3D Parzen Window
-        data_corr *= parzen_window_3D
+        data_corr *= parzen_window_3d
 
     data_fft = abs(fftshift(fftn(data_corr)))
     data_fft[data_fft < 1e-4] = 1e-4
@@ -132,8 +130,9 @@ def ent_rate_sp(data, sm_window):
 
 def _est_indp_sp(data):
     """
-    Estimate the effective number of independent samples based on the maximum
-    entropy rate principle of stationary random process.
+    Estimate the effective number of independent samples.
+
+    Bbased on the maximum entropy rate principle of stationary random process.
 
     Parameters
     ----------
@@ -152,7 +151,6 @@ def _est_indp_sp(data):
     This function estimates the effective number of independent samples by omitting
     the least significant components with the subsampling scheme (Li et al., 2007)
     """
-
     dims = data.shape
     n_iters_0 = None
 
@@ -173,8 +171,7 @@ def _est_indp_sp(data):
         raise ValueError("Ill conditioned data, can not estimate " "independent samples.")
     n_iters = n_iters_0
     LGR.debug(
-        "Estimated the entropy rate of the Gaussian component "
-        "with subsampling depth {}".format(j + 1)
+        f"Estimated the entropy rate of the Gaussian component with subsampling depth {j + 1}"
     )
 
     return n_iters, ent_rate
@@ -196,7 +193,6 @@ def _subsampling(data, sub_depth):
     out : ndarray
         Subsampled data
     """
-
     slices = [slice(None, None, sub_depth)] * data.ndim
     out = data[tuple(slices)]
     return out
@@ -204,7 +200,7 @@ def _subsampling(data, sub_depth):
 
 def _kurtn(data):
     """
-    Normalized kurtosis funtion so that for a Gaussian r.v. the kurtn(g) = 0.
+    Normalize kurtosis funtion so that for a Gaussian r.v. the kurtn(g) = 0.
 
     Parameters
     ----------
@@ -217,7 +213,6 @@ def _kurtn(data):
         The kurtosis of each vector in x along the second dimension. For
         tedana, this will be the kurtosis of each PCA component.
     """
-
     kurt = kurtosis(data, axis=0, fisher=True)
     kurt[kurt < 0] = 0
     kurt = np.expand_dims(kurt, 1)
@@ -227,8 +222,9 @@ def _kurtn(data):
 
 def _icatb_svd(data, n_comps=None):
     """
-    Run Singular Value Decomposition (SVD) on input data and extracts the
-    given number of components (n_comps).
+    Run Singular Value Decomposition (SVD) on input data.
+
+    Runs SVD and extracts the given number of components (n_comps).
 
     Parameters
     ----------
@@ -244,28 +240,27 @@ def _icatb_svd(data, n_comps=None):
     Lambda : float
         Eigenvalues
     """
-
     if not n_comps:
         n_comps = np.min((data.shape[0], data.shape[1]))
 
-    _, Lambda, vh = svd(data, full_matrices=False)
+    _, lambda_var, vh = svd(data, full_matrices=False)
 
     # Sort eigen vectors in Ascending order
-    V = vh.T
-    Lambda = Lambda / np.sqrt(data.shape[0] - 1)  # Whitening (sklearn)
-    inds = np.argsort(np.power(Lambda, 2))
-    Lambda = np.power(Lambda, 2)[inds]
-    V = V[:, inds]
-    sumAll = np.sum(Lambda)
+    v = vh.T
+    lambda_var = lambda_var / np.sqrt(data.shape[0] - 1)  # Whitening (sklearn)
+    inds = np.argsort(np.power(lambda_var, 2))
+    lambda_var = np.power(lambda_var, 2)[inds]
+    v = v[:, inds]
+    sum_all = np.sum(lambda_var)
 
     # Return only the extracted components
-    V = V[:, (V.shape[1] - n_comps) :]
-    Lambda = Lambda[Lambda.shape[0] - n_comps :]
-    sumUsed = np.sum(Lambda)
-    retained = (sumUsed / sumAll) * 100
-    LGR.debug("{ret}% of non-zero components retained".format(ret=retained))
+    v = v[:, (v.shape[1] - n_comps) :]
+    lambda_var = lambda_var[lambda_var.shape[0] - n_comps :]
+    sum_used = np.sum(lambda_var)
+    retained = (sum_used / sum_all) * 100
+    LGR.debug(f"{retained}% of non-zero components retained")
 
-    return V, Lambda
+    return v, lambda_var
 
 
 def _eigensp_adj(lam, n, p):
@@ -298,7 +293,6 @@ def _eigensp_adj(lam, n, p):
       functional magnetic resonance imaging data.
       Human brain mapping, 28(11), pp.1251-1266.
     """
-
     r = p / n
     bp = np.power((1 + np.sqrt(r)), 2)
     bm = np.power((1 - np.sqrt(r)), 2)
