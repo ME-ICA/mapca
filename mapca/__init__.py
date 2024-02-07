@@ -2,7 +2,6 @@
 
 import warnings
 
-
 from mapca.__about__ import __version__
 
 from .mapca import MovingAveragePCA, ma_pca
