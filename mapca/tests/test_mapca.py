@@ -90,7 +90,7 @@ def test_MovingAveragePCA():
     # Test other stuff
     pca2 = MovingAveragePCA(criterion="mdl", normalize=True)
     pca2.fit(test_img, test_mask_img)
-    u2 = pca2.transform(test_img)
+    u2 = pca2.transform()
     assert np.array_equal(u2.get_fdata(), u.get_fdata())
 
     test_data_est = pca2.inverse_transform(u2, test_mask_img)

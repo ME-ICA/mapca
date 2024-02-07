@@ -477,17 +477,10 @@ class MovingAveragePCA:
         dataset.
         """
         self._fit(img, mask, subsample_depth=subsample_depth)
-        return self.transform(img)
+        return self.transform()
 
-    def transform(self, img):
-        """Apply dimensionality reduction to x.
-
-        x is projected on the first principal components previously extracted from a training set.
-
-        Parameters
-        ----------
-        img : 4D niimg_like
-            Data on which to apply PCA.
+    def transform(self):
+        """Return x after dimensionality reduction.
 
         Returns
         -------
@@ -497,8 +490,6 @@ class MovingAveragePCA:
         -----
         This is different from scikit-learn's approach, which ignores explained variance.
         """
-        # x = self.scaler_.fit_transform(x.T).T
-        # x_new = np.dot(np.dot(x, self.components_.T), np.diag(1.0 / self.explained_variance_))
         return self.u_nii_
 
     def inverse_transform(self, img, mask):
