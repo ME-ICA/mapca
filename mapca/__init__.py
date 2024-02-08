@@ -3,8 +3,7 @@
 import warnings
 
 from mapca.__about__ import __version__
-
-from .mapca import MovingAveragePCA, ma_pca
+from mapca.mapca import MovingAveragePCA, ma_pca
 
 # cmp is not used, so ignore nipype-generated warnings
 warnings.filterwarnings("ignore", r"cmp not installed")
