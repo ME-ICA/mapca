@@ -3,7 +3,7 @@
 """Base module variables."""
 
 try:
-    from mapca import __version__
+    from mapca._version import __version__
 except ImportError:
     __version__ = "0+unknown"
 
