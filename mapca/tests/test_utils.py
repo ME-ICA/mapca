@@ -10,9 +10,7 @@ from mapca.utils import _autocorr, _eigensp_adj, _icatb_svd, _subsampling, ent_r
 
 
 def test_autocorr():
-    """
-    Unit test on _autocorr function
-    """
+    """Unit test on _autocorr function."""
     test_data = np.array([1, 2, 3, 4])
     test_result = np.array([30, 20, 11, 4])
     autocorr = _autocorr(test_data)
@@ -20,6 +18,7 @@ def test_autocorr():
 
 
 def test_parzen_win():
+    """Test parzen gives expected output."""
     test_npoints = 3
     test_result = np.array([0.07407407, 1, 0.07407407])
     win = parzen(test_npoints)
@@ -31,9 +30,7 @@ def test_parzen_win():
 
 
 def test_ent_rate_sp():
-    """
-    Check that ent_rate_sp runs correctly, i.e. returns a float
-    """
+    """Check that ent_rate_sp runs correctly, i.e. returns a float."""
     test_data = np.random.rand(200, 10, 10)
     ent_rate = ent_rate_sp(test_data, 0)
     ent_rate = ent_rate_sp(test_data, 1)
@@ -55,9 +52,7 @@ def test_ent_rate_sp():
 
 
 def test_subsampling():
-    """
-    Unit test for subsampling function
-    """
+    """Unit test for subsampling function."""
     # 1D input
     test_data = np.array([1])
     sub_data = _subsampling(test_data, sub_depth=2)
@@ -76,18 +71,14 @@ def test_subsampling():
 
 
 def test_icatb_svd():
-    """
-    Unit test for icatb_svd function.
-    """
+    """Unit test for icatb_svd function."""
     test_data = np.diag(np.random.rand(5))
-    V, Lambda = _icatb_svd(test_data)
-    assert np.allclose(np.sum(V, axis=0), np.ones((5,)))
+    v, lambda_var = _icatb_svd(test_data)
+    assert np.allclose(np.sum(v, axis=0), np.ones((5,)))
 
 
 def test_eigensp_adj():
-    """
-    Unit test for eigensp_adj function
-    """
+    """Unit test for eigensp_adj function."""
     test_eigen = np.array([0.9, 0.5, 0.2, 0.1, 0])
     n_effective = 2
     test_result = np.array([0.13508894, 0.11653465, 0.06727316, 0.05211424, 0.0])
@@ -96,7 +87,7 @@ def test_eigensp_adj():
 
 
 def test_kurtosis():
-    # Generate data
+    """Generate data."""
     test_data = np.array([[-10, 2, 500, 0, -0.4], [-4, -200, -40, 0.1, 90]]).T
 
     # Run scipy function

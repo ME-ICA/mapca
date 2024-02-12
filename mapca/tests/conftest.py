@@ -1,3 +1,5 @@
+"""Tests for mapca configuration."""
+
 import os
 from urllib.request import urlretrieve
 
@@ -6,7 +8,7 @@ import pytest
 
 def fetch_file(osf_id, path, filename):
     """
-    Fetches file located on OSF and downloads to `path`/`filename`1
+    Fetch file located on OSF and downloads to `path`/`filename`1.
 
     Parameters
     ----------
@@ -25,7 +27,7 @@ def fetch_file(osf_id, path, filename):
     full_path : str
         Full path to downloaded `filename`
     """
-    url = "https://osf.io/{}/download".format(osf_id)
+    url = f"https://osf.io/{osf_id}/download"
     full_path = os.path.join(path, filename)
     if not os.path.isfile(full_path):
         urlretrieve(url, full_path)
@@ -34,35 +36,41 @@ def fetch_file(osf_id, path, filename):
 
 @pytest.fixture(scope="session")
 def testpath(tmp_path_factory):
-    """Test path that will be used to download all files"""
+    """Test path that will be used to download all files."""
     return tmp_path_factory.getbasetemp()
 
 
 @pytest.fixture
 def test_img(testpath):
+    """Fetch data file."""
     return fetch_file("jw43h", testpath, "data.nii.gz")
 
 
 @pytest.fixture
 def test_mask(testpath):
+    """Fetch mask file."""
     return fetch_file("9u2m5", testpath, "mask.nii.gz")
 
 
 @pytest.fixture
 def test_ts(testpath):
+    """Fetch comp_ts file."""
     return fetch_file("gz2hb", testpath, "comp_ts.npy")
 
 
 @pytest.fixture
 def test_varex(testpath):
+    """Fetch varex file."""
     return fetch_file("7xj5k", testpath, "varex.npy")
 
 
 @pytest.fixture
 def test_varex_norm(testpath):
+    """Fetch varex_norm file."""
     return fetch_file("jrd9c", testpath, "varex_norm.npy")
 
 
 @pytest.fixture
 def test_weights(testpath):
+    """Fetch weights file."""
     return fetch_file("t94m8", testpath, "voxel_comp_weights.npy")

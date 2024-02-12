@@ -1,6 +1,4 @@
-"""
-Integration test for mapca.
-"""
+"""Integration tests for mapca."""
 
 import shutil
 from os.path import split

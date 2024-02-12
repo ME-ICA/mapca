@@ -95,6 +95,74 @@ jobs:
           paths:
             - src/coverage/.coverage.py310
 
+  unittest_311:
+    docker:
+      - image: continuumio/miniconda3
+    working_directory: /tmp/src/mapca
+    steps:
+      - checkout
+      - restore_cache:
+          key: conda-py311-v1-{{ checksum "pyproject.toml" }}
+      - run:
+          name: Generate environment
+          command: |
+            apt-get update
+            apt-get install -yqq make
+            if [ ! -d /opt/conda/envs/mapca_py311 ]; then
+              conda create -yq -n mapca_py311 python=3.11
+              source activate mapca_py311
+              pip install .[tests]
+            fi
+      - run:
+          name: Running unit tests
+          command: |
+            source activate mapca_py311
+            py.test --ignore mapca/tests/test_integration.py --cov-append --cov-report term-missing --cov=mapca mapca/
+            mkdir /tmp/src/coverage
+            mv /tmp/src/mapca/.coverage /tmp/src/coverage/.coverage.py311
+      - save_cache:
+          key: conda-py311-v1-{{ checksum "pyproject.toml" }}
+          paths:
+            - /opt/conda/envs/mapca_py311
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - src/coverage/.coverage.py311
+
+  unittest_312:
+    docker:
+      - image: continuumio/miniconda3
+    working_directory: /tmp/src/mapca
+    steps:
+      - checkout
+      - restore_cache:
+          key: conda-py312-v1-{{ checksum "pyproject.toml" }}
+      - run:
+          name: Generate environment
+          command: |
+            apt-get update
+            apt-get install -yqq make
+            if [ ! -d /opt/conda/envs/mapca_py312 ]; then
+              conda create -yq -n mapca_py312 python=3.12
+              source activate mapca_py312
+              pip install .[tests]
+            fi
+      - run:
+          name: Running unit tests
+          command: |
+            source activate mapca_py312
+            py.test --ignore mapca/tests/test_integration.py --cov-append --cov-report term-missing --cov=mapca mapca/
+            mkdir /tmp/src/coverage
+            mv /tmp/src/mapca/.coverage /tmp/src/coverage/.coverage.py312
+      - save_cache:
+          key: conda-py312-v1-{{ checksum "pyproject.toml" }}
+          paths:
+            - /opt/conda/envs/mapca_py312
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - src/coverage/.coverage.py312
+
   unittest_38:
     docker:
       - image: continuumio/miniconda3
@@ -202,12 +270,13 @@ jobs:
             twine upload dist/*
 
 workflows:
-  version: 2.1
   build_test:
     jobs:
       - makeenv_38
       - unittest_39
       - unittest_310
+      - unittest_311
+      - unittest_312
       - unittest_38:
           requires:
             - makeenv_38
@@ -222,6 +291,8 @@ workflows:
             - unittest_38
             - unittest_39
             - unittest_310
+            - unittest_311
+            - unittest_312
       - deploy:
           requires:
             - merge_coverage
