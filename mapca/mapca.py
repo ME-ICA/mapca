@@ -22,7 +22,7 @@ import logging
 
 import nibabel as nib
 import numpy as np
-from nilearn._utils import check_niimg_3d, check_niimg_4d
+from nilearn._utils.niimg_conversions import check_niimg_3d, check_niimg_4d
 from scipy.stats import kurtosis
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
