@@ -1,7 +1,8 @@
 """Tests for mapca configuration."""
 
+import json
 import os
-from urllib.request import urlretrieve
+from urllib.request import urlopen, urlretrieve
 
 import pytest
 
@@ -27,10 +28,19 @@ def fetch_file(osf_id, path, filename):
     full_path : str
         Full path to downloaded `filename`
     """
-    url = f"https://osf.io/metadata/{osf_id}/?format=datacite-json"
+    # Use OSF API v2 to get the download URL
+    api_url = f"https://api.osf.io/v2/files/{osf_id}/"
     full_path = os.path.join(path, filename)
+
     if not os.path.isfile(full_path):
-        urlretrieve(url, full_path)
+        # Fetch metadata to get download link
+        with urlopen(api_url) as response:
+            metadata = json.load(response)
+            download_url = metadata["data"]["links"]["download"]
+
+        # Download the actual file
+        urlretrieve(download_url, full_path)
+
     return full_path
 
 
