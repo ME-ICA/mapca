@@ -27,7 +27,7 @@ def fetch_file(osf_id, path, filename):
     full_path : str
         Full path to downloaded `filename`
     """
-    url = f"https://osf.io/{osf_id}/download"
+    url = f"https://osf.io/metadata/{osf_id}/?format=datacite-json"
     full_path = os.path.join(path, filename)
     if not os.path.isfile(full_path):
         urlretrieve(url, full_path)
