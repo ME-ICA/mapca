@@ -20,6 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 import logging
 
+import nibabel as nib
 import numpy as np
 from nilearn import image, masking
 from nilearn._utils.niimg_conversions import check_niimg_3d, check_niimg_4d
@@ -153,18 +154,18 @@ class MovingAveragePCA:
         self.scaler_ = StandardScaler(with_mean=True, with_std=True)
         if self.normalize:
             # TODO: determine if tedana is already normalizing before this
-            x = self.scaler_.fit_transform(x.T).T  # This was x_sc
+            x = self.scaler_.fit_transform(X.T).T  # This was x_sc
             # x = ((x.T - x.T.mean(axis=0)) / x.T.std(axis=0)).T
 
         X_img = masking.unmask(X.T, mask)
 
         LGR.info("Performing SVD on original data...")
-        v, eigenvalues = utils._icatb_svd(x, n_timepoints)
+        V, eigenvalues = utils._icatb_svd(x, n_timepoints)
         LGR.info("SVD done on original data")
 
         # Reordering of values
         eigenvalues = eigenvalues[::-1]
-        dataN = np.dot(X, V[:, ::-1])
+        data_n = np.dot(X, V[:, ::-1])
         # Potentially the small differences come from the different signs on V
 
         # Using 12 gaussian components from middle, top and bottom gaussian
@@ -200,7 +201,7 @@ class MovingAveragePCA:
         sub_iid_sp = np.zeros((sub_depth,))
         for i in range(sub_depth):
             x_single = np.zeros(n_x * n_y * n_z)
-            x_single[mask_vec == 1] = dataN[:, idx[i]]
+            x_single[mask_vec == 1] = data_n[:, idx[i]]
             x_single = np.reshape(x_single, (n_x, n_y, n_z), order="F")
             sub_iid_sp[i] = utils._est_indp_sp(x_single)[0] + 1
             if i > 6:
@@ -523,9 +524,9 @@ class MovingAveragePCA:
         mask_vec = np.reshape(mask, n_x * n_y * n_z, order="F")
         X = data_nib_V[mask_vec == 1, :]
 
-        x_orig = np.dot(np.dot(x, np.diag(self.explained_variance_)), self.components_)
+        X_orig = np.dot(np.dot(X, np.diag(self.explained_variance_)), self.components_)
         if self.normalize:
-            x_orig = self.scaler_.inverse_transform(x_orig.T).T
+            X_orig = self.scaler_.inverse_transform(X_orig.T).T
 
         n_t = X_orig.shape[1]
         out_data = np.zeros((n_x * n_y * n_z, n_t))
