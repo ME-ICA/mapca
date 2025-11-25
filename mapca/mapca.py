@@ -140,16 +140,18 @@ class MovingAveragePCA:
         )
 
         img = check_niimg_4d(img)
-        mask_img = check_niimg_3d(mask)
+        self.mask_img_ = check_niimg_3d(mask)
         data = img.get_fdata()
-        mask_data = mask_img.get_fdata()
+        mask_data = self.mask_img_.get_fdata()
 
+        # NOTE: Using F-order reshaping for backward compatibility with existing behavior.
+        # nilearn's apply_mask uses C-order, which would change the voxel ordering.
         [n_x, n_y, n_z, n_timepoints] = data.shape
         data_nib_V = np.reshape(data, (n_x * n_y * n_z, n_timepoints), order="F")
         mask_vec = np.reshape(mask_data, n_x * n_y * n_z, order="F")
         X = data_nib_V[mask_vec == 1, :]
 
-        n_samples = np.sum(mask_vec)
+        n_samples = int(np.sum(mask_vec))
 
         self.scaler_ = StandardScaler(with_mean=True, with_std=True)
         if self.normalize:
@@ -411,7 +413,7 @@ class MovingAveragePCA:
             np.dot(X, self.components_.T), np.diag(1.0 / self.explained_variance_)
         )
         self.u_ = component_maps
-        component_imgs = masking.unmask(component_maps.T, mask_img)
+        component_imgs = masking.unmask(component_maps.T, self.mask_img_)
         self.u_nii_ = component_imgs
 
     def fit(self, img, mask, subsample_depth=None):
@@ -513,10 +515,11 @@ class MovingAveragePCA:
         This is different from scikit-learn's approach, which ignores explained variance.
         """
         img = check_niimg_4d(img)
-        mask = check_niimg_3d(mask)
+        mask_img = check_niimg_3d(mask)
         data = img.get_fdata()
-        mask_data = mask.get_fdata()
+        mask_data = mask_img.get_fdata()
 
+        # NOTE: Using F-order reshaping for backward compatibility with existing behavior.
         [n_x, n_y, n_z, n_components] = data.shape
         data_nib_V = np.reshape(data, (n_x * n_y * n_z, n_components), order="F")
         mask_vec = np.reshape(mask_data, n_x * n_y * n_z, order="F")
