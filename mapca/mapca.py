@@ -140,13 +140,13 @@ class MovingAveragePCA:
         )
 
         img = check_niimg_4d(img)
-        mask = check_niimg_3d(mask)
+        mask_img = check_niimg_3d(mask)
         data = img.get_fdata()
-        mask = mask.get_fdata()
+        mask_data = mask_img.get_fdata()
 
         [n_x, n_y, n_z, n_timepoints] = data.shape
         data_nib_V = np.reshape(data, (n_x * n_y * n_z, n_timepoints), order="F")
-        mask_vec = np.reshape(mask, n_x * n_y * n_z, order="F")
+        mask_vec = np.reshape(mask_data, n_x * n_y * n_z, order="F")
         X = data_nib_V[mask_vec == 1, :]
 
         n_samples = np.sum(mask_vec)
@@ -157,7 +157,7 @@ class MovingAveragePCA:
             x = self.scaler_.fit_transform(X.T).T  # This was x_sc
             # x = ((x.T - x.T.mean(axis=0)) / x.T.std(axis=0)).T
 
-        X_img = masking.unmask(X.T, mask)
+        X_img = masking.unmask(X.T, mask_img)
 
         LGR.info("Performing SVD on original data...")
         V, eigenvalues = utils._icatb_svd(x, n_timepoints)
@@ -196,7 +196,7 @@ class MovingAveragePCA:
 
         # Estimate the subsampling depth for effectively i.i.d. samples
         LGR.info("Estimating the subsampling depth for effective i.i.d samples...")
-        mask_ND = np.reshape(mask_vec, (n_x, n_y, n_z), order="F")
+        mask_ND = np.reshape(mask_data, (n_x, n_y, n_z), order="F")
         sub_depth = len(idx)
         sub_iid_sp = np.zeros((sub_depth,))
         for i in range(sub_depth):
@@ -413,7 +413,7 @@ class MovingAveragePCA:
             np.dot(x, self.components_.T), np.diag(1.0 / self.explained_variance_)
         )
         self.u_ = component_maps
-        component_imgs = masking.unmask(component_maps.T, mask)
+        component_imgs = masking.unmask(component_maps.T, mask_img)
         self.u_nii_ = component_imgs
 
     def fit(self, img, mask, subsample_depth=None):
@@ -517,11 +517,11 @@ class MovingAveragePCA:
         img = check_niimg_4d(img)
         mask = check_niimg_3d(mask)
         data = img.get_fdata()
-        mask = mask.get_fdata()
+        mask_data = mask.get_fdata()
 
         [n_x, n_y, n_z, n_components] = data.shape
         data_nib_V = np.reshape(data, (n_x * n_y * n_z, n_components), order="F")
-        mask_vec = np.reshape(mask, n_x * n_y * n_z, order="F")
+        mask_vec = np.reshape(mask_data, n_x * n_y * n_z, order="F")
         X = data_nib_V[mask_vec == 1, :]
 
         X_orig = np.dot(np.dot(X, np.diag(self.explained_variance_)), self.components_)
