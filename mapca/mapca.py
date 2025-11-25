@@ -22,7 +22,7 @@ import logging
 
 import nibabel as nib
 import numpy as np
-from nilearn import image, masking
+from nilearn import masking
 from nilearn._utils.niimg_conversions import check_niimg_3d, check_niimg_4d
 from scipy.stats import kurtosis
 from sklearn.decomposition import PCA
@@ -154,15 +154,11 @@ class MovingAveragePCA:
         self.scaler_ = StandardScaler(with_mean=True, with_std=True)
         if self.normalize:
             # TODO: determine if tedana is already normalizing before this
-            x = self.scaler_.fit_transform(X.T).T  # This was x_sc
+            X = self.scaler_.fit_transform(X.T).T  # This was x_sc
             # x = ((x.T - x.T.mean(axis=0)) / x.T.std(axis=0)).T
-        else:
-            x = X
-
-        X_img = masking.unmask(X.T, mask_img)
 
         LGR.info("Performing SVD on original data...")
-        V, eigenvalues = utils._icatb_svd(x, n_timepoints)
+        V, eigenvalues = utils._icatb_svd(X, n_timepoints)
         LGR.info("SVD done on original data")
 
         # Reordering of values
@@ -350,7 +346,7 @@ class MovingAveragePCA:
 
         # PCA with all possible components (the estimated selection is made after)
         ppca = PCA(n_components=None, svd_solver="full", copy=False, whiten=False)
-        ppca.fit(x)
+        ppca.fit(X)
 
         # Get cumulative explained variance as components are added
         cumsum_varexp = np.cumsum(ppca.explained_variance_ratio_)
@@ -412,7 +408,7 @@ class MovingAveragePCA:
         # Commenting out noise variance as it depends on the covariance of the estimation
         # self.noise_variance_ = ppca.noise_variance_
         component_maps = np.dot(
-            np.dot(x, self.components_.T), np.diag(1.0 / self.explained_variance_)
+            np.dot(X, self.components_.T), np.diag(1.0 / self.explained_variance_)
         )
         self.u_ = component_maps
         component_imgs = masking.unmask(component_maps.T, mask_img)
