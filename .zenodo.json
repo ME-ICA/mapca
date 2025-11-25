@@ -4,6 +4,16 @@
             "name": "The ME-ICA Community"
         },
         {
+            "name": "Ahmed, Zaki",
+            "affiliation": "Mayo Clinic",
+            "orcid": "0000-0001-5648-0590"
+        },
+        {
+            "name": "Salo, Taylor",
+            "affiliation": "Florida International University",
+            "orcid": "0000-0001-9813-3167"
+        },
+        {
             "name": "Uruñuela, Eneko",
             "affiliation": "Basque Center on Cognition, Brain and Language",
             "orcid": "0000-0001-6849-9088"
@@ -13,6 +23,6 @@
         "neuroimaging",
         "fMRI"
     ],
-    "license": "",
+    "license": "GPL-2.0",
     "upload_type": "software"
 }
