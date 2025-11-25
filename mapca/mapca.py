@@ -156,6 +156,8 @@ class MovingAveragePCA:
             # TODO: determine if tedana is already normalizing before this
             x = self.scaler_.fit_transform(X.T).T  # This was x_sc
             # x = ((x.T - x.T.mean(axis=0)) / x.T.std(axis=0)).T
+        else:
+            x = X
 
         X_img = masking.unmask(X.T, mask_img)
 
