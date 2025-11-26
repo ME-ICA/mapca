@@ -196,7 +196,7 @@ class MovingAveragePCA:
 
         # Estimate the subsampling depth for effectively i.i.d. samples
         LGR.info("Estimating the subsampling depth for effective i.i.d samples...")
-        mask_ND = np.reshape(mask_data, (n_x, n_y, n_z), order="F")
+        mask_3d = np.reshape(mask_data, (n_x, n_y, n_z), order="F")
         sub_depth = len(idx)
         sub_iid_sp = np.zeros((sub_depth,))
         for i in range(sub_depth):
@@ -259,7 +259,7 @@ class MovingAveragePCA:
         n = np.round(n_samples / np.power(sub_iid_sp_median, dim_n))
 
         if sub_iid_sp_median != 1:
-            mask_s = utils._subsampling(mask_ND, sub_iid_sp_median)
+            mask_s = utils._subsampling(mask_3d, sub_iid_sp_median)
             mask_s_1d = np.reshape(mask_s, np.prod(mask_s.shape), order="F")
             dat = np.zeros((int(np.sum(mask_s_1d)), n_timepoints))
             LGR.info("Generating subsampled i.i.d. data...")
