@@ -22,11 +22,17 @@ import logging
 
 import nibabel as nib
 import numpy as np
+from nilearn import __version__ as nilearn_version
 from nilearn import masking
-from nilearn._utils.niimg_conversions import check_niimg_3d, check_niimg_4d
+from packaging.version import Version
 from scipy.stats import kurtosis
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+
+if Version(nilearn_version) >= Version("0.13.0"):
+    from nilearn.image import check_niimg_3d, check_niimg_4d
+else:
+    from nilearn._utils.niimg_conversions import check_niimg_3d, check_niimg_4d
 
 from mapca import utils
 
