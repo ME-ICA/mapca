@@ -25,10 +25,13 @@ def test_integration(test_img, test_mask, test_ts, test_varex, test_varex_norm, 
     v_norm = np.load(test_varex_norm)
     comp_ts = np.load(test_ts)
 
-    assert np.allclose(voxel_comp_weights, u)
+    # should be the same, but with sign-flips of rows accounted for
+    assert np.allclose(
+        voxel_comp_weights, np.sign(voxel_comp_weights[0, :]) * np.sign(u[0, :]) * u
+    )
     assert np.allclose(varex, s)
     assert np.allclose(v_norm, varex_norm)
-    assert np.allclose(comp_ts, v)
+    assert np.allclose(comp_ts, np.sign(comp_ts[0, :]) * np.sign(v[0, :]) * v)
 
     # Remove files
     shutil.rmtree(test_path)
