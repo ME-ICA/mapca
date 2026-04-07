@@ -1,5 +1,6 @@
 import os
-from urllib.request import urlretrieve
+
+import requests
 
 import pytest
 
@@ -28,7 +29,10 @@ def fetch_file(osf_id, path, filename):
     url = 'https://osf.io/{}/download'.format(osf_id)
     full_path = os.path.join(path, filename)
     if not os.path.isfile(full_path):
-        urlretrieve(url, full_path)
+        r = requests.get(url)
+        r.raise_for_status()
+        with open(full_path, "wb") as f:
+            f.write(r.content)
     return full_path
 
 
