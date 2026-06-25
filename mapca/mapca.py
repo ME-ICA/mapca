@@ -317,7 +317,7 @@ class MovingAveragePCA:
             kic[k_idx] = (-2 * mlh) + (3 * df)
             mdl[k_idx] = -mlh + (0.5 * df * np.log(n))
 
-        itc = np.row_stack([aic, kic, mdl])
+        itc = np.vstack([aic, kic, mdl])
 
         dlap = np.diff(itc, axis=1)
 
